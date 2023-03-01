@@ -8,7 +8,7 @@ which has been submitted to [Fishery Bulletin](https://spo.nmfs.noaa.gov/fb.htm)
 We investigated the dynamics of fishery ladings for the three fish species most caught at the Rio de la Plata estuary and its maritime front (Southwestern Atlantic Ocean) using Autoregressive Integrated Moving Average (ARIMA) models. Our results prove that the selected ARIMA models are able to capture the dynamics of fishery landings and provide a short-term reliable prediction of catches for the three species. 
 
 ### Authors
-This work was developed through a collaboration between [Jesus C. Compaire](https://www.researchgate.net/profile/Jesus-Compaire), [E. Marcelo Acha](https://www.researchgate.net/profile/Marcelo-Acha), [Diego Moreira](https://www.researchgate.net/profile/Diego-Moreira-3) and [Claudia G. Simionato](https://www.researchgate.net/profile/Claudia-Simionato). The R code was developed and is maintained by Jesus C. Compaire.
+This work was conducted by [Jesus C. Compaire](https://www.researchgate.net/profile/Jesus-Compaire), [E. Marcelo Acha](https://www.researchgate.net/profile/Marcelo-Acha), [Diego Moreira](https://www.researchgate.net/profile/Diego-Moreira-3) and [Claudia G. Simionato](https://www.researchgate.net/profile/Claudia-Simionato). Jesus C. Compaire wrote and updates the R scripts.
 
 ### Files description and workflow
 - ***elevation_AUCFZ_ETOPO2022.tiff*** contains elevation data for the study area retrieved from [ETOPO](https://doi.org/10.25921/fd45-gt74) 
