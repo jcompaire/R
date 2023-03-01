@@ -11,7 +11,7 @@ We investigated the dynamics of fishery ladings for the three fish species most 
 This work was developed through a collaboration between [Jesus C. Compaire](https://www.researchgate.net/profile/Jesus-Compaire), [E. Marcelo Acha](https://www.researchgate.net/profile/Marcelo-Acha), [Diego Moreira](https://www.researchgate.net/profile/Diego-Moreira-3) and [Claudia G. Simionato](https://www.researchgate.net/profile/Claudia-Simionato). The R code was developed and is maintained by Jesus C. Compaire.
 
 ### Files description and workflow
-- ***time_series_aucfz_data.RData*** contains the time series of monthly commercial landings for the 1996-2021 period for Cynoscion guatucupa, Micropogonias furnieri and Merluccius hubbsi.
+- ***time_series_aucfz_data.RData*** contains the time series of monthly commercial landings for the 1996-2021 period for *Cynoscion guatucupa*, *Micropogonias furnieri* and *Merluccius hubbsi*.
 - ***time_series_aucfz_functions.R*** contains the algorithms and functions necessary to run the file "time_series_aucfz_code.R" .
 - ***time_series_aucfz_code.R*** contains the code to load the dataset, perform the statistical analyses and get the outputs.
 
