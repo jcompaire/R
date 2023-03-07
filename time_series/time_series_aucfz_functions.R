@@ -12,7 +12,7 @@
 ## performed in the manuscript:
 ## Compaire, J.C., Acha, E.M., Moreira, D. & Simionato C.G. (2023).
 ## Time series modeling of coastal fishery landings on the Southwestern
-## Atlantic shelf (submitted to Fishery Bulletin)
+## Atlantic shelf
 ##
 ## -- -- -- -- -- -- -- -- -- -- -- -- --
 #
