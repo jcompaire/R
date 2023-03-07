@@ -12,7 +12,7 @@
 ## performed in the manuscript:
 ## Compaire, J.C., Acha, E.M., Moreira, D. & Simionato C.G. (2023).
 ## Time series modeling of coastal fishery landings on the Southwestern
-## Atlantic shelf (submitted to Fishery Bulletin)
+## Atlantic shelf
 ##
 ## -- -- -- -- -- -- -- -- -- -- -- -- --
 #
@@ -22,8 +22,8 @@ rm(list=ls())
 # Load packages needed for analysis and figures ####
 pk <- c("astsa", "car", "comprehenr", "devtools", "FitAR", "forecast",
         "ggplot2", "ggsn", "ggspatial", "ggthemes", "lubridate", "Metrics",
-        "ncdf4", "patchwork", "plyr", "dplyr", "raster", "Rcpp",
-        "readxl", "scales", "stats", "tseries", "zoo")
+        "ncdf4", "patchwork", "plyr", "dplyr", "raster", "Rcpp", "readxl",
+        "rnaturalearth", "sf", "scales", "stats", "tseries", "zoo")
 lapply(pk, require, character.only = TRUE)
 # Set working directory, invoke functions and load datasets  ####
 setwd("~/gdrive/GitHub/R/TimeSeries/") # directory
@@ -56,6 +56,7 @@ pdf(file_name, width=9, height=6, bg = "transparent", colormodel = "cmyk",
 par(mfcol=c(1,1))
 p1 <- map_aucfz(df = bathy, plygn = aucfz, scale = "discrete", clabs)
 # South America map
+sa_countries <- ne_countries(continent = "South America", returnclass = "sf")
 p2 <- ggplot() +
   geom_sf(data=sa_countries, color = "grey22", fill = "grey90") +
   theme(panel.border = element_rect(colour = "black", fill = NA, size=0.5),
