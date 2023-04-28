@@ -22,5 +22,5 @@ of variance. Austral ecology, 26(1), 32-46.
 Compaire, J.C., Casademont, P., Cabrera, R., Gómez-Cama, C., & Soriguer, M.C. 
 (2018). Feeding of Scorpaena porcus (Scorpaenidae) in intertidal rock pools in 
 the Gulf of Cadiz (NE Atlantic). Journal of the Marine Biological Association 
-of the United Kingdom, 98(4), 845-853.
+of the United Kingdom, 98(4), 845-853. doi:10.1017/S0025315417000030
 ````
