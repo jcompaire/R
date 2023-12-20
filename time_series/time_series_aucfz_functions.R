@@ -5,14 +5,14 @@
 ## Institution: Centro de Investigaciones del Mar y la Atmósfera (CIMA)
 ## Position: Postdoctoral researcher
 ## Contact details: jesus.canocompaire@uca.es
-## Date created: Jan-2023
+## Date created: Aug-2023
 ## -- -- -- -- -- -- -- -- -- -- -- -- --
 ##
 ## Code to replicate the statistical analyses and generate figures 
 ## performed in the manuscript:
 ## Compaire, J.C., Acha, E.M., Moreira, D. & Simionato C.G. (2023).
 ## Time series modeling of coastal fishery landings on the Southwestern
-## Atlantic shelf
+## Atlantic shelf: influence of environmental drivers
 ##
 ## -- -- -- -- -- -- -- -- -- -- -- -- --
 #
@@ -60,6 +60,34 @@ tran_boxcox <- function(x,lambda){
   } else {
     xt_box <- (x^lambda - 1)/lambda
   }
+}
+#
+## === WAVELET ANALYSIS ====
+## -- -- -- -- -- -- -- -- -- -- -- -- --
+## f(x) to perform wavelet coherency analysis between two time series
+## -- -- -- -- -- -- -- -- -- -- -- -- --
+coherency_analysis <- function(dataframe, vars_key){
+  df <- dataframe
+  wv_list <- list()
+  for (j in 1:length(vars_key)){
+    print(paste0(vars_key[j],'... ',j,'/',length(vars_key)))
+    my.data <- as.data.frame(cbind(
+      x = df[[vars_key[j]]],
+      y = df$landings))
+    my.data[["date"]] <- as.POSIXct(df$date)
+    my.data <- na.omit(my.data)
+    print(my.data$date[1])
+    my.wc <- analyze.coherency(my.data, my.pair = c("x","y"),
+                               loess.span = 0, dt = 1, dj = 1/100,
+                               lowerPeriod = 2,
+                               upperPeriod = 128,
+                               window.type.t = 2, window.type.s = 2,
+                               window.size.t = 2, window.size.s = 2,
+                               make.pval = TRUE, n.sim = 1000,
+                               verbose = F)
+    wv_list[[j]] <-assign(paste0("wv_",vars_key[j]), my.wc)
+  }
+  return(wv_list)
 }
 #
 ## === FIGURES ====
@@ -366,157 +394,8 @@ map_aucfz <- function(df, plygn = NULL, scale = NULL, clabs = NULL, ...){
     theme(
       text = element_text(family = "Times"))
   }
-## Fig. 2 - RELATIONSHIP CPUE - COMMERCIAL LANDINGS ####
-cpue_landings.plot <- function(df){
-  if (!is.data.frame(df))
-    stop("'df' must be a dataframe containing species names, cpue and landings")
-  sp <- unique(df$species)
-  rs <- list(); ns <- list()
-  for (i in 1:length(sp)) {
-    subdf <- df[df$species == sp[i], ]
-    ns[i] <- length(subdf$landings)
-    mod_lm <- lm(cpue ~ landings, data = subdf)
-    r <- sqrt(summary(mod_lm)[["r.squared"]])
-    rs[i] <- round(r, 2)
-    pvalue <- summary(mod_lm)$coefficients[, 4][2]
-    if (pvalue < 0.001) {
-      print(paste(sp[i], " -> p-value < 0.001", " / r = ", round(r, 2)))
-    } else
-      print(paste(sp[i], " -> p-value = ", round(pvalue, 3),
-                  "/ r = ", round(r, 2)))
-  }
- lm <-
-    ggplot(df, aes(
-      x = cpue,
-      y = landings,
-      color = species,
-      fill = species
-    )) +
-    geom_point() +
-    scale_x_continuous(breaks = round(seq(0, 2400, by = 200), 1)) +
-    scale_y_continuous(breaks = round(seq(0, 110000, by = 10000), 1),
-                       labels = comma) +
-    geom_smooth(method = "lm", se = TRUE, alpha = 0.5) +
-    scale_fill_brewer(palette = "Dark2") +
-   annotate(
-     geom = "text", x = 275, y = 1000,
-     label = paste0("n= ", ns[1] ,"; r= ", rs[1]), 
-     fontface = "plain", family = "Times", color = "black", size = 4) +
-   annotate(
-     geom = "text", x = 700, y = 13000,
-     label = paste0("n= ", ns[2] ,"; r= ", rs[2]), 
-     fontface = "plain", family = "Times", color = "black", size = 4) +
-   annotate(
-     geom = "text", x = 1500, y = 50000,
-     label = paste0("n= ", ns[3] ,"; r= ", rs[3]), 
-     fontface = "plain", family = "Times", color = "black", size = 4) +
-    theme_tufte() +
-    theme(
-      legend.title = element_blank(),
-      legend.justification = c(0, 1),
-      legend.position = c(0.05, 0.90),
-      legend.direction = "vertical",
-      legend.spacing.x = unit(0.25, 'cm'),
-      legend.spacing.y = unit(1, 'cm'),
-      legend.key.size = unit(1, "cm"),
-      legend.background = element_blank(),
-      legend.text = element_text(
-        colour = "black",
-        size = 14,
-        face = "italic"
-      )
-    ) +
-    theme(axis.line = element_line(colour = "black")) +
-    theme(axis.text = element_text(color = "black", size = 12)) +
-    labs(y = "Landings (t)", x = "CPUE",
-         caption = "Data source: DINARA's technical reports") +
-    theme(axis.text = element_text(size = 12),
-          axis.title = element_text(size = 14, face = "plain"))
-  lm + scale_color_brewer(palette = "Dark2")
-}
 #
-## Fig. 3 - BOX PLOTS - COMMERCIAL LANDINGS ####
-bp_landings.plot <- function(df){
-  out_mild <- {}; out_extr <- {}
-  n <- {}
-  i <- 0
-  ux <- unique(df$Scientific_name)
-  for(j in 1:length(ux)){
-    i <- i+1
-    idx <- which(toString(ux[j]) == df$Scientific_name)
-    n[j] <- length(idx)
-    sp <- df[idx,]
-    # Get QUARTILES to detect outliers
-    QT <- summary(sp$Landing)
-    # Access elements in QUARTILE SUMMARY
-    Min <- QT[[1]]; Q1 <- QT[[2]]; MD <- QT[[3]];
-    AV <- QT[[4]]; Q3 <- QT[[5]]; Max <- QT[[6]];
-    # Calculating IQR (interquartile range): Q3-Q1
-    IQR = Q3-Q1
-    # Minor & Extreme outliers fall outside (Q1 +- 1.5*IQR) & (Q3 +- 1.5*IQR)
-    outliers_mild <- c(Q1 - 1.5*IQR , Q3 + 1.5*IQR)
-    outliers_extr <- c(Q1 - 3*IQR , Q3 + 3*IQR)
-    # Appending for each species
-    out_mild <- rbind(out_mild, outliers_mild) 
-    out_extr <- rbind(out_extr, outliers_extr)
-    # Renaming rows according to each species common names
-    rownames(out_mild)[i] <- ux[i]
-    rownames(out_extr)[i] <- ux[i]
-  }
-  # Convert to DataFrame and renaming columns
-  out_mild <- as.data.frame(out_mild); out_extr <- as.data.frame(out_extr); 
-  colnames(out_mild) <- paste(c('lower','upper'))
-  colnames(out_extr) <- paste(c('lower','upper'))
-  upper_out.extr <- out_extr[2][[1]]
-  # Kind of text
-  bt <- element_text(face = "bold", color = "black") # Bold
-  it <- element_text(face = "italic", color = "black") # Italic
-  ggplot(df, aes(x= Scientific_name, y= Landing, fill = Scientific_name)) +
-    geom_boxplot(outlier.colour="black", outlier.shape=16,
-                 outlier.size=2, notch=FALSE, alpha = 1) +
-    geom_segment(aes(y = upper_out.extr[1], yend = upper_out.extr[1],
-                     x = 0.75, xend = 1.25),
-                 linetype="dashed", colour = "black", size=.2) +
-    annotate("text", x = 1, y = -250,
-             label= paste("n = ",n[1]),
-             family = "Times", size = 4.5, fontface = 1) +
-    geom_segment(aes(y = upper_out.extr[2], yend = upper_out.extr[2],
-                     x = 1.75, xend = 2.25),
-                 linetype="dashed", colour = "black", size=.2) +
-    annotate("text", x = 2, y = -250,
-             label= paste("n = ",n[2]),
-             family = "Times", size = 4.5, fontface = 1) +
-    geom_segment(aes(y = upper_out.extr[3], yend = upper_out.extr[3],
-                     x = 2.75, xend = 3.25),
-                 linetype="dashed", colour = "black", size=.2) +
-    annotate("text", x = 3, y = -250,
-             label= paste("n = ",n[3]),
-             family = "Times", size = 4.5, fontface = 1) +
-    scale_fill_brewer(palette = 'Dark2') +
-    theme(strip.background = element_blank(), strip.text.x = element_blank()) +
-    theme(axis.text.x = element_blank()) +
-    labs(x = "", y = "Landings (t)") +
-    theme(axis.title = bt) +
-    theme_tufte() +
-    theme(legend.title=element_blank(),
-          legend.justification=c(0,1), 
-          legend.position= c(0.05, 0.95),
-          legend.direction = "vertical",
-          legend.spacing.x = unit(0.25, 'cm'),
-          legend.spacing.y = unit(1, 'cm'),
-          legend.key.size = unit(1, "cm"),
-          legend.background = element_blank(),
-          legend.text = element_text(colour = "black",
-                                     size = 14,
-                                     face = "italic")) +
-    theme(axis.text.x=element_blank()) +
-    theme(axis.line = element_line(colour = "black")) +
-    theme(axis.text = element_text(color = "black", size = 12)) +
-    theme(axis.text=element_text(size=12),
-          axis.title=element_text(size=14,face="plain")) 
-}
-#
-## Fig. 4 - TIME SERIES: MONTHLY PEAKS ####
+## Fig. 2 - TIME SERIES: MONTHLY PEAKS ####
 monthly_peaks.plot <- function(df){
   if (!is.data.frame(df))
     stop("'df' must be a dataframe containing landings and dates")
@@ -571,7 +450,7 @@ monthly_peaks.plot <- function(df){
   pl
 }
 # 
-## Fig. 5 & Figs. 6b, 7b, 8b - CORRELOGRAMS ####
+## Fig. 3 & Figs. 4b, 5b, 6b - CORRELOGRAMS ####
 correlograms.plot <- function(x, lags = NULL, main = NULL,
                               upperindex = NULL, ...){
   if (!is.numeric(x))
@@ -654,7 +533,7 @@ pt <- p1 / p2
 pt
 }
 #
-## Figs. 6a, 7a, 8a - RESIDUALS_TEMPORAL SERIES ####
+## Figs. 4a, 5a, 6a - RESIDUALS_TEMPORAL SERIES ####
 residuals_ts.plot <- function(x, upperindex = NULL, ...){
   if (!is.numeric(x))
     stop("'x' must be a numeric vector")
@@ -680,7 +559,7 @@ residuals_ts.plot <- function(x, upperindex = NULL, ...){
                                       hjust = -0.05, vjust = -4))
 }
 #
-## Figs. 6c, 7c, 8c - RESIDUALS_HISTOGRAM ####
+## Figs. 4c, 5c, 6c - RESIDUALS_HISTOGRAM ####
 residuals_hist.plot <- function(x, pval = NULL, upperindex = NULL, ...){
   if (!is.numeric(x))
     stop("'x' must be a numeric vector")
@@ -769,7 +648,7 @@ residuals_hist.plot <- function(x, pval = NULL, upperindex = NULL, ...){
                                        hjust = -0.05, vjust = 1.8))
 }
 #
-## Figs. 6d, 7d, 8d - RESIDUALS_p-VALUES ####
+## Figs. 4d, 5d, 6d - RESIDUALS_p-VALUES ####
 residuals_pv.plot <- function(df, upperindex = NULL,...){
   if (!is.data.frame(df))
     stop("'df' must be a dataframe got from LjungBoxTest")
@@ -798,10 +677,11 @@ residuals_pv.plot <- function(df, upperindex = NULL,...){
     theme(plot.title = element_text(size=16, face = "bold",
                                     hjust = -0.05, vjust = 0.5))
 }
-## Figs. 9, 10, 11 - TIME SERIES: OBSERVED, FITTED AND FORECAST VALUES  ####
-obs_fit_for.plot <- function(x, y, z, main = NULL, line_col, shaded_col ){
+## Figs. 7, 8, 9 - TIME SERIES: OBSERVED, FITTED AND FORECAST VALUES  ####
+obs_fit_for.plot <- function(x, y, z, ufit, lfit, ufor, lfor,
+                             main = NULL, line_col, shaded_col ){
   if (!is.numeric(x) || !is.numeric(y) || !is.numeric(z))
-    stop("'x, y and z' must be a numeric vector")
+    stop("'x, y, z, ufit, lfit, ufor, lfor' must be a numeric vector")
   if (is.null(main)) {
     mytitle = NULL
   } else if (!is.character(main)){
@@ -814,11 +694,11 @@ obs_fit_for.plot <- function(x, y, z, main = NULL, line_col, shaded_col ){
     autolayer(y, lty = 1, lwd=0.8, series=paste0("Fitted")) +
     autolayer(ts(z, start = c(startTfor,1), frequency = 12),
               series="Forecast", lty = 1, lwd=.8) +
-    geom_ribbon(data =fit_values, aes(x = time(up95fit),
-                                      ymax = up95fit, ymin = lo95fit),
+    geom_ribbon(data = y, aes(x = time(ufit),
+                                      ymax = ufit, ymin = lfit),
                 fill = shaded_col[1], alpha = 0.23) +
-    geom_ribbon(data = x.ts_2yr,
-                aes(x = time(up95for),ymax = up95for, ymin = lo95for),
+    geom_ribbon(data = z,
+                aes(x = time(ufor),ymax = ufor, ymin = lfor),
                 fill = shaded_col[2], alpha = 0.23) +
     scale_color_manual(values = line_col) +
     labs(y = 'Landings (t)', x = 'Dates') + theme_tufte() +
@@ -843,8 +723,320 @@ obs_fit_for.plot <- function(x, y, z, main = NULL, line_col, shaded_col ){
           legend.text = element_text(size = 16),
           legend.key.size = unit(1, "cm"))
 }
+## Fig. 10 - HEATMAP ====
+heatmap.plot <- function(df, upperindex = NULL, ylabs = NULL, ...){
+  if (!is.data.frame(df))
+    stop("'df' must be a dataframe containing species and variable names,
+         r-pearson values, and lags")
+  if(is.null(upperindex)){
+    upperindex = NULL
+  } else if (!is.character(upperindex))
+    stop("'upperindex' must be a character string")
+  if (is.null(ylabs)){
+    plt_ylabs = FALSE
+    et = element_blank()
+  } else if (!is.null(ylabs)){
+    plt_ylabs = TRUE
+    et = element_text(hjust = -0.4)
+  }
+  # Define the desired order of variables
+  desired_order <- c("wmi", "chl", "sss", "kd", "sst", "river")
+  # Convert variable to a factor with the desired order
+  df$variable <- factor(df$variable, levels = desired_order)
+  # 
+  ggplot(data = df) +
+    geom_tile(aes(x = lag, y = variable, fill = r)) +
+    scale_fill_gradientn(
+      colors = c("navyblue", "white", "white", "white", "red"),
+      breaks = c(-0.2, -0.1, 0, 0.1, 0.2),
+      limits = c(-0.2, 0.2),
+      na.value = "white"
+    ) +
+    labs(
+      x = "Lag (months)", y = '',
+      title = df$species[1],
+      subtitle = upperindex
+    ) +
+    scale_x_continuous(
+      breaks = seq(0, 15, by = 6),
+      guide = "axis_minor",
+      minor_breaks = seq(0, 15, by = 1),
+      expand = c(0,0)
+    ) +
+    scale_y_discrete(
+      expand = c(0,0),
+      guide = "axis_minor"
+    ) +
+    guides(
+      x.sec = "axis_minor"
+    ) + # y.sec = "axis_minor"
+    theme_tufte() +
+    theme(
+      panel.border = element_rect(fill = NA, color = "black", size = 1),
+      panel.grid.major = element_blank()
+    ) +
+    theme(
+      axis.ticks.length.y = unit(-0.25, "cm"),
+      axis.ticks.length.x = unit(-0.25, "cm"),
+      ggh4x.axis.ticks.length.minor = rel(0.5)
+    ) +
+    theme(
+      axis.text = element_text(color = "black", size = 16),
+      axis.text.y.left = et, #element_text(hjust = -0.4),
+      axis.text.y.right = element_blank(),
+      axis.text.x = element_text(vjust = -3),
+      axis.text.x.top = element_blank(),
+      axis.title.x = element_text(size = 15, margin = margin(t = 20))
+    ) +
+    theme(
+      legend.position = "bottom", legend.key.width = unit(2.5, "cm"),
+      legend.text = element_text(size = 14),
+      legend.title = element_blank()
+    ) +
+    theme(
+      plot.title = element_text(size = 20, face = 'italic',
+                                hjust = 0.5, vjust = -5),
+      plot.subtitle = element_text(size = 23, face = 'bold',
+                                   hjust = -0.01, vjust = 2)
+    )
+}
+## Figs. 11, 12, 13 - WAVELET COHERENCY AND PHASE ANALYSES ====
+getWavelets.plot = function(wvc, var_name, sp_name, ulab, cb = NULL) {
+  if (!is.list(wvc))
+    stop("'wvc' must be a list containing analysis coherence results")
+  if (!is.character(var_name) || !is.character(sp_name) ||
+      !is.character(ulab))
+    stop("'var_name, sp_name, ulab' must be a character string")
+  if (is.null(cb)){
+    plt_lgnd = FALSE
+  } else if (!is.null(cb)){
+    plt_lgnd = TRUE
+  }
+  titlet <- bquote(bold(.(var_name))*bold(" and fishery landings of ")*
+                     bolditalic(.(sp_name)))
+  # wvc <-mysignal
+  date_axis <- wvc[["series"]][["date"]]
+  taxis <- seq(
+    as.POSIXct(date_axis[1]),
+    as.POSIXct(date_axis[length(date_axis)]), by = 'year')
+  par(cex.lab = 1.5, cex.axis = 1.3)
+  wc.image(
+    wvc,
+    which.image = "wc",
+    n.levels = 250, color.key = "interval",
+    maximum.level = 1, exponent = 1,
+    siglvl.contour = 0.05, siglvl.arrow = 0.05, which.arrow.sig = "wc",
+    main = title(titlet, cex.main = 1.7, line = 0.9),
+    plot.legend = plt_lgnd,
+    legend.params = list(lab = "Wavelet coherence levels",
+                         label.digits = 1, mar = 5.5, cex.legend = 0.5),
+    timelab = NULL, periodlab = "Period (months)",
+    show.date = TRUE, date.format = "%F %T",
+    spec.time.axis = list(at = taxis,
+                          labels = year(as.Date(taxis, format = "%Y")),
+                          las = 1),
+    timetcl = -0.25,
+    spec.period.axis = list(at = c(3, 6, 12, 24, 48, 84, 120)),
+    periodtcl = -0.25,
+    graphics.reset = F)
+  mtext(paste0(ulab), side = 3, adj = -0.05, line = 0.5,
+        cex = 2, font = 2)
+  # return(wvc)
+}
+## Fig. 14 - AVERAGE WAVELET POWER SPECTRUM ENVIRONMENTAL ====
+wavelet_power.plot <- function(wps_lines, color_patterns, lmts, lbls){
+  if (!is.data.frame(wps_lines))
+    stop("'wps_lines' must be a dataframe containing wavelet power spectrum
+         results for each variable")
+  ggplot() +
+    geom_line(data = wps_lines, aes(x = period, y = wps, color = variable),
+              linetype = 1,
+              lwd = 1.5,
+              alpha = 0.8) +
+    scale_color_manual(values = colorBlindBlack8,
+                       limits = lmts,
+                       labels = lbls) +
+    # coord_flip() +
+    scale_x_continuous(name="Period (months)", 
+                       breaks = c(0, 3, 6, 12, 24, 48, 84, 120),
+                       labels = c(0, 3, 6, 12, 24, 48, 84, 120),
+                       limits= c(2, 120)) +
+    scale_y_continuous(name="Average wavelet power", 
+                       breaks = c(seq(0, 1, 0.2)),
+                       labels = c(seq(0, 1, 0.2)),
+                       limits= c(0, 1)) +
+    theme_tufte() +
+    theme(
+      legend.title = element_blank(),
+      legend.justification = c(0, 1),
+      legend.position = c(0.4, 0.9),
+      legend.direction = "vertical",
+      legend.spacing.x = unit(0.25, 'cm'),
+      legend.spacing.y = unit(1, 'cm'),
+      legend.key.size = unit(1, "cm"),
+      legend.background = element_blank(),
+      legend.text = element_text(
+        colour = "black",
+        size = 14,
+        face = "italic")
+    ) +
+    theme(axis.line = element_line(colour = "black")) +
+    theme(axis.text = element_text(color = "black", size = 12)) +
+    theme(axis.text = element_text(size = 12),
+          axis.title = element_text(size = 14, face = "plain"))
+}
+#                                       
+## Fig. S1 - RELATIONSHIP CPUE - COMMERCIAL LANDINGS ####
+cpue_landings.plot <- function(df){
+  if (!is.data.frame(df))
+    stop("'df' must be a dataframe containing species names, cpue and landings")
+  sp <- unique(df$species)
+  rs <- list(); ns <- list()
+  for (i in 1:length(sp)) {
+    subdf <- df[df$species == sp[i], ]
+    ns[i] <- length(subdf$landings)
+    mod_lm <- lm(cpue ~ landings, data = subdf)
+    r <- sqrt(summary(mod_lm)[["r.squared"]])
+    rs[i] <- round(r, 2)
+    pvalue <- summary(mod_lm)$coefficients[, 4][2]
+    if (pvalue < 0.001) {
+      print(paste(sp[i], " -> p-value < 0.001", " / r = ", round(r, 2)))
+    } else
+      print(paste(sp[i], " -> p-value = ", round(pvalue, 3),
+                  "/ r = ", round(r, 2)))
+  }
+ lm <-
+    ggplot(df, aes(
+      x = cpue,
+      y = landings,
+      color = species,
+      fill = species
+    )) +
+    geom_point() +
+    scale_x_continuous(breaks = round(seq(0, 2400, by = 200), 1)) +
+    scale_y_continuous(breaks = round(seq(0, 110000, by = 10000), 1),
+                       labels = comma) +
+    geom_smooth(method = "lm", se = TRUE, alpha = 0.5) +
+    scale_fill_brewer(palette = "Dark2") +
+   annotate(
+     geom = "text", x = 275, y = 1000,
+     label = paste0("n= ", ns[1] ,"; r= ", rs[1]), 
+     fontface = "plain", family = "Times", color = "black", size = 4) +
+   annotate(
+     geom = "text", x = 700, y = 13000,
+     label = paste0("n= ", ns[2] ,"; r= ", rs[2]), 
+     fontface = "plain", family = "Times", color = "black", size = 4) +
+   annotate(
+     geom = "text", x = 1500, y = 50000,
+     label = paste0("n= ", ns[3] ,"; r= ", rs[3]), 
+     fontface = "plain", family = "Times", color = "black", size = 4) +
+    theme_tufte() +
+    theme(
+      legend.title = element_blank(),
+      legend.justification = c(0, 1),
+      legend.position = c(0.05, 0.90),
+      legend.direction = "vertical",
+      legend.spacing.x = unit(0.25, 'cm'),
+      legend.spacing.y = unit(1, 'cm'),
+      legend.key.size = unit(1, "cm"),
+      legend.background = element_blank(),
+      legend.text = element_text(
+        colour = "black",
+        size = 14,
+        face = "italic"
+      )
+    ) +
+    theme(axis.line = element_line(colour = "black")) +
+    theme(axis.text = element_text(color = "black", size = 12)) +
+    labs(y = "Landings (t)", x = "CPUE",
+         caption = "Data source: DINARA's technical reports") +
+    theme(axis.text = element_text(size = 12),
+          axis.title = element_text(size = 14, face = "plain"))
+  lm + scale_color_brewer(palette = "Dark2")
+}
 #
-## Figs. S1, S2 - DECOM.PLOT ====
+## Fig. S2 - BOX PLOTS - COMMERCIAL LANDINGS ####
+bp_landings.plot <- function(df){
+  out_mild <- {}; out_extr <- {}
+  n <- {}
+  i <- 0
+  ux <- unique(df$Scientific_name)
+  for(j in 1:length(ux)){
+    i <- i+1
+    idx <- which(toString(ux[j]) == df$Scientific_name)
+    n[j] <- length(idx)
+    sp <- df[idx,]
+    # Get QUARTILES to detect outliers
+    QT <- summary(sp$Landing)
+    # Access elements in QUARTILE SUMMARY
+    Min <- QT[[1]]; Q1 <- QT[[2]]; MD <- QT[[3]];
+    AV <- QT[[4]]; Q3 <- QT[[5]]; Max <- QT[[6]];
+    # Calculating IQR (interquartile range): Q3-Q1
+    IQR = Q3-Q1
+    # Minor & Extreme outliers fall outside (Q1 +- 1.5*IQR) & (Q3 +- 1.5*IQR)
+    outliers_mild <- c(Q1 - 1.5*IQR , Q3 + 1.5*IQR)
+    outliers_extr <- c(Q1 - 3*IQR , Q3 + 3*IQR)
+    # Appending for each species
+    out_mild <- rbind(out_mild, outliers_mild) 
+    out_extr <- rbind(out_extr, outliers_extr)
+    # Renaming rows according to each species common names
+    rownames(out_mild)[i] <- ux[i]
+    rownames(out_extr)[i] <- ux[i]
+  }
+  # Convert to DataFrame and renaming columns
+  out_mild <- as.data.frame(out_mild); out_extr <- as.data.frame(out_extr); 
+  colnames(out_mild) <- paste(c('lower','upper'))
+  colnames(out_extr) <- paste(c('lower','upper'))
+  upper_out.extr <- out_extr[2][[1]]
+  # Kind of text
+  bt <- element_text(face = "bold", color = "black") # Bold
+  it <- element_text(face = "italic", color = "black") # Italic
+  ggplot(df, aes(x= Scientific_name, y= Landing, fill = Scientific_name)) +
+    geom_boxplot(outlier.colour="black", outlier.shape=16,
+                 outlier.size=2, notch=FALSE, alpha = 1) +
+    geom_segment(aes(y = upper_out.extr[1], yend = upper_out.extr[1],
+                     x = 0.75, xend = 1.25),
+                 linetype="dashed", colour = "black", size=.2) +
+    annotate("text", x = 1, y = -250,
+             label= paste("n = ",n[1]),
+             family = "Times", size = 4.5, fontface = 1) +
+    geom_segment(aes(y = upper_out.extr[2], yend = upper_out.extr[2],
+                     x = 1.75, xend = 2.25),
+                 linetype="dashed", colour = "black", size=.2) +
+    annotate("text", x = 2, y = -250,
+             label= paste("n = ",n[2]),
+             family = "Times", size = 4.5, fontface = 1) +
+    geom_segment(aes(y = upper_out.extr[3], yend = upper_out.extr[3],
+                     x = 2.75, xend = 3.25),
+                 linetype="dashed", colour = "black", size=.2) +
+    annotate("text", x = 3, y = -250,
+             label= paste("n = ",n[3]),
+             family = "Times", size = 4.5, fontface = 1) +
+    scale_fill_brewer(palette = 'Dark2') +
+    theme(strip.background = element_blank(), strip.text.x = element_blank()) +
+    theme(axis.text.x = element_blank()) +
+    labs(x = "", y = "Landings (t)") +
+    theme(axis.title = bt) +
+    theme_tufte() +
+    theme(legend.title=element_blank(),
+          legend.justification=c(0,1), 
+          legend.position= c(0.05, 0.95),
+          legend.direction = "vertical",
+          legend.spacing.x = unit(0.25, 'cm'),
+          legend.spacing.y = unit(1, 'cm'),
+          legend.key.size = unit(1, "cm"),
+          legend.background = element_blank(),
+          legend.text = element_text(colour = "black",
+                                     size = 14,
+                                     face = "italic")) +
+    theme(axis.text.x=element_blank()) +
+    theme(axis.line = element_line(colour = "black")) +
+    theme(axis.text = element_text(color = "black", size = 12)) +
+    theme(axis.text=element_text(size=12),
+          axis.title=element_text(size=14,face="plain")) 
+}
+#
+## Figs. S3, S4 - DECOM.PLOT ====
 decomp.plot <- function(x, main = NULL, type = NULL, ...){
   mylist <- c("x", "seasonal", "trend", "random", "figure", "type")
   if(!isTRUE(all(mylist %in% names(x), TRUE)))
