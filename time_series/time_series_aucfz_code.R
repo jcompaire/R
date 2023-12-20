@@ -5,14 +5,14 @@
 ## Institution: Centro de Investigaciones del Mar y la Atmósfera (CIMA)
 ## Position: Postdoctoral researcher
 ## Contact details: jesus.canocompaire@uca.es
-## Date created: Jan-2023
+## Date created: Aug-2023
 ## -- -- -- -- -- -- -- -- -- -- -- -- --
 ##
 ## Code to replicate the statistical analyses and generate figures 
 ## performed in the manuscript:
 ## Compaire, J.C., Acha, E.M., Moreira, D. & Simionato C.G. (2023).
 ## Time series modeling of coastal fishery landings on the Southwestern
-## Atlantic shelf
+## Atlantic shelf: influence of environmental drivers
 ##
 ## -- -- -- -- -- -- -- -- -- -- -- -- --
 #
@@ -20,10 +20,10 @@
 cat("\014") 
 rm(list=ls()) 
 # Load packages needed for analysis and figures ####
-pk <- c("astsa", "car", "comprehenr", "devtools", "FitAR", "forecast",
+pk <- c("astsa", "car", "comprehenr", "cowplot", "devtools", "FitAR", "forecast",
         "ggplot2", "ggsn", "ggspatial", "ggthemes", "lubridate", "Metrics",
         "ncdf4", "patchwork", "plyr", "dplyr", "raster", "Rcpp", "readxl",
-        "rnaturalearth", "sf", "scales", "stats", "tseries", "zoo")
+        "rnaturalearth", "sf", "scales", "stats", "tidyverse", "tseries", "zoo")
 lapply(pk, require, character.only = TRUE)
 # Set working directory, invoke functions and load datasets  ####
 setwd("~/gdrive/GitHub/R/TimeSeries/") # directory
@@ -220,6 +220,7 @@ run_models(y = x.ts.BoxCox, pi, qi, d, Pi, Qi, D, per)
 pdq = c(1,1,1); PDQ = c(0,1,1); per = 12
 best_model <- Arima(x.ts.BoxCox,
                     order = pdq, seasonal = list(order=PDQ, period=per))
+cor(x.ts_24yr, best_model[["fitted"]], method = "pearson")
 ## Graphical DIAGNOSIS OF THE RESIDUALS ----------------------------------------
 ## Saving plot
 file_name = paste0(file = output, "Fig6_", spname_file,
@@ -228,6 +229,9 @@ pdf(file_name, width=12, height=6, bg = "transparent", colormodel = "cmyk")
 ## A) Temporal evolution of residuals ====
 res_bm <- best_model$residuals
 stdres <- (res_bm)/(sqrt(best_model$sigma2))
+namec <- rep('C. guatucupa', length(stdres))
+dates <- as.Date(x.ts_24yr)
+rsdls_1 <- data.frame(namec, stdres, dates)
 pRES <- residuals_ts.plot(x = stdres, upperindex = 'A')
 ## B) ACF and PACF of residuals ====
 pCOR <- correlograms.plot(x = res_bm, lags = 36,
@@ -281,7 +285,7 @@ lo95fit[lo95fit < 0] <- 0
 # 
 ## Forecast for 2 yr (24 months) ----------------------------------------------
 model_forecast <- forecast(x.ts.BoxCox,
-                           h = 48, level = c(95),
+                           h = 24, level = c(95),
                            lambda=NULL, biasadj = NULL, model = best_model)
 for_values <- ts(bxcx(
   model_forecast$mean,lambda.x, InverseQ = TRUE, type = "BoxCox"),
@@ -295,8 +299,6 @@ lo95for <- ts(bxcx(
   start = c(2020,1), frequency = 12)
 lo95for[lo95for < 0] <- 0
 #
-ff <- cbind(for_values, up95for, lo95for)
-write_xlsx(as.data.frame(ff), '~/gdrive/GitHub/R/TimeSeries/dff.xlsx')
 ## Plotting time series (observed, fitted and forecasted values) --------------
 ## Saving plot
 file_name = paste0(file = output, "Fig9_" ,spname_file, "_FINAL_PLOT",
@@ -305,14 +307,18 @@ pdf(file_name, width=12, height=6, bg = "transparent", colormodel = "cmyk")
 line_col <- c('black', "#1B9E77", "darkred") # colour lines
 shad_col <- c("#2b4f19", "#C51E1E") # colour shaded area
 par(mfcol=c(1,1))
-obs_fit_for.plot(x = x.ts, y = fit_values, z = for_values, main = spname,
-            line_col, shad_col)
+obs_fit_for.plot(x = x.ts, y = fit_values, z = for_values,
+                 ufit = up95fit, lfit = lo95fit,
+                 ufor = up95for, lfor = lo95for,
+                 main = spname,
+                 line_col, shad_col)
 dev.off()
 #
 ## ----------------------------------------------------------------------------
 # Clear console and environment keeping dataset, packages and functions ####
 cat("\014") 
-rm(list = setdiff(ls(), (c("data.set","df", "output", "pk", lsf.str()))))
+rm(list = setdiff(ls(), (c("rsdls_1", "dates",
+                           "data.set","df", "output", "pk", lsf.str()))))
 # ============ Micropogonias furnieri - Whitemouth croaker ============ ####
 #  https://www.fishbase.se/summary/7620
 sp <- subset(df, label == 2) # Subset by species
@@ -415,6 +421,7 @@ run_models(y = x.ts_24yr, pi, qi, d, Pi, Qi, D, per)
 pdq = c(0,1,3); PDQ = c(0,1,1); per = 12
 best_model <- Arima(x.ts_24yr,
                     order = pdq, seasonal = list(order=PDQ, period=per))
+cor(x.ts_24yr, best_model[["fitted"]], method = "pearson")
 ## Graphical DIAGNOSIS OF THE RESIDUALS ----------------------------------------
 ## Saving plot
 file_name = paste0(file = output, "Fig7_" ,spname_file,
@@ -423,6 +430,8 @@ pdf(file_name, width=12, height=6, bg = "transparent", colormodel = "cmyk")
 ## A) Temporal evolution of residuals ====
 res_bm <- best_model$residuals
 stdres <- (res_bm)/(sqrt(best_model$sigma2))
+namec <- rep('M. furnieri', length(stdres))
+rsdls_2 <- data.frame(namec, stdres, dates)
 pRES <- residuals_ts.plot(x = stdres, upperindex = 'A')
 ## B) ACF and PACF of residuals ====
 pCOR <- correlograms.plot(x = res_bm, lags = 36, upperindex = 'B')
@@ -471,7 +480,7 @@ lo95fit[lo95fit < 0] <- 0
 # 
 ## Forecast for 2 yr (24 months) ----------------------------------------------
 model_forecast <- forecast(x.ts_24yr,
-                           h = 48, level = c(95),
+                           h = 24, level = c(95),
                            lambda=NULL, biasadj = NULL, model = best_model)
 for_values <- ts(model_forecast$mean, start = c(2020,1), frequency = 12)
 ##  95 % Prediction interval
@@ -479,8 +488,6 @@ up95for <- ts(model_forecast$upper, start = c(2020,1), frequency = 12)
 lo95for <- ts(model_forecast$lower, start = c(2020,1), frequency = 12)
 lo95for[lo95for < 0] <- 0
 #
-ff <- cbind(for_values, up95for, lo95for)
-write_xlsx(as.data.frame(ff), '~/gdrive/GitHub/R/TimeSeries/dff2.xlsx')
 ## Plotting time series (observed, fitted and forecasted values) --------------
 ## Saving plot
 file_name = paste0(file = output, "Fig10_",spname_file, "_FINAL_PLOT",
@@ -489,14 +496,18 @@ pdf(file_name, width=12, height=6, bg = "transparent", colormodel = "cmyk")
 line_col <- c('black', "#D95F02", "darkred") # colour lines
 shad_col <- c("#EA9439", "#C51E1E") # colour shaded area
 par(mfcol=c(1,1))
-obs_fit_for.plot(x = x.ts, y = fit_values, z = for_values, main = spname,
+obs_fit_for.plot(x = x.ts, y = fit_values, z = for_values,
+                 ufit = up95fit, lfit = lo95fit,
+                 ufor = up95for, lfor = lo95for,
+                 main = spname,
             line_col, shad_col)
 dev.off()
 # 
 ## ----------------------------------------------------------------------------
 # Clear console and environment keeping dataset, packages and functions ####
 cat("\014") 
-rm(list = setdiff(ls(), (c("data.set" ,"df", "output", "pk", lsf.str()))))
+rm(list = setdiff(ls(), (c("rsdls_1", "rsdls_2", "dates",
+                           "data.set" ,"df", "output", "pk", lsf.str()))))
 # ============ Merluccius hubbsi - Argentine hake ============ ####
 #  https://www.fishbase.se/summary/325
 sp <- subset(df, label == 3) # Subset by species
@@ -596,6 +607,7 @@ run_models(y = x.ts_24yr, pi, qi, d, Pi, Qi, D, per)
 pdq = c(1,1,1); PDQ = c(0,1,1); per = 12
 best_model <- Arima(x.ts_24yr,
                     order = pdq, seasonal = list(order=PDQ, period=per))
+cor(x.ts_24yr, best_model[["fitted"]], method = "pearson")
 ## Graphical DIAGNOSIS OF THE RESIDUALS ----------------------------------------
 ## Saving plot
 file_name = paste0(file = output, "Fig8_", spname_file,
@@ -604,6 +616,11 @@ pdf(file_name, width=12, height=6, bg = "transparent", colormodel = "cmyk")
 ## A) Temporal evolution of residuals ====
 res_bm <- best_model$residuals
 stdres <- (res_bm)/(sqrt(best_model$sigma2))
+namec <- rep(spname, length(stdres))
+rsdls_3 <- data.frame(namec, stdres, dates)
+rsdls <- bind_rows(rsdls_1, rsdls_2, rsdls_3)
+colnames(rsdls) <- c('Scientific_name','residuals','date_num')
+save(rsdls, file = 'residuals_fishes.RData')
 pRES <- residuals_ts.plot(x = stdres, upperindex = 'A')
 ## B) ACF and PACF of residuals ====
 pCOR <- correlograms.plot(x = res_bm, lags = 36, upperindex = 'B')
@@ -651,7 +668,7 @@ lo95fit[lo95fit < 0] <- 0
 # 
 ## Forecast for 2 yr (24 months) ----------------------------------------------
 model_forecast <- forecast(x.ts_24yr,
-                           h = 48, level = c(95),
+                           h = 24, level = c(95),
                            lambda=NULL, biasadj = NULL, model = best_model)
 for_values <- ts(model_forecast$mean, start = c(2020,1), frequency = 12)
 ##  95 % Prediction interval
@@ -659,8 +676,6 @@ up95for <- ts(model_forecast$upper, start = c(2020,1), frequency = 12)
 lo95for <- ts(model_forecast$lower, start = c(2020,1), frequency = 12)
 lo95for[lo95for < 0] <- 0
 #
-ff <- cbind(for_values, up95for, lo95for)
-write_xlsx(as.data.frame(ff), '~/gdrive/GitHub/R/TimeSeries/dff3.xlsx')
 ## Plotting time series (observed, fitted and forecasted values) --------------
 ## Saving plot
 file_name = paste0(file = output, "Fig11_", spname_file, "_FINAL_PLOT",
@@ -669,7 +684,10 @@ pdf(file_name, width=12, height=6, bg = "transparent", colormodel = "cmyk")
 line_col <- c('black', "#7570B3", "darkred") # colour lines
 shad_col <- c(rgb(0,0,1,0.5), "#C51E1E") # colour shaded area
 par(mfcol=c(1,1))
-obs_fit_for.plot(x = x.ts, y = fit_values, z = for_values, main = spname,
+obs_fit_for.plot(x = x.ts, y = fit_values, z = for_values,
+                 ufit = up95fit, lfit = lo95fit,
+                 ufor = up95for, lfor = lo95for,
+                 main = spname,
             line_col, shad_col)
 dev.off()
 # 
@@ -743,4 +761,179 @@ dp + plot_annotation(subtitle = "C",
                          hjust = 0.02, vjust = -4)))
 dev.off()
 #
-##
+-------------------
+# Clear console and environment keeping dataset, packages and functions ####
+cat("\014") 
+rm(list = setdiff(ls(), (c("data.set" ,"output", "pk", lsf.str()))))
+# ============ Heatmap plot ============
+df <- data.set[[9]]
+df$species <- as.factor(df$species)
+cg <- subset(df, species == "C. guatucupa")
+mf <- subset(df, species == "M. furnieri")
+mh <- subset(df, species == "M. hubbsi")
+p1 <- heatmap.plot(cg, "A", ylabs = "yes") +
+  theme(legend.position="none") +
+  guides(size = "none") +
+  theme(plot.margin = margin(0,0.5,2,0, "cm"))
+p2 <- heatmap.plot(mf, "B", ylabs =  NULL) +
+  guides(size = "none") +
+  theme(plot.margin = margin(0,0.5,0,0, "cm"))
+p3 <- heatmap.plot(mh, "C", ylabs =  NULL) +
+  theme(legend.position="none") +
+  guides(size = "none") +
+  theme(plot.margin = margin(0,0.5,2,0, "cm"))
+## Merging each figure into a single plot ====
+par(mfcol=c(1,1))
+pp <- plot_grid(p1, NULL, p2, NULL, p3,
+                rel_widths = c(1, -0.1, 1, -0.1, 1), align = "hv", nrow = 1)
+lgnd_text <- "r - pearson"
+pt <- annotate_figure(pp,
+                      bottom = textGrob(
+                        lgnd_text,
+                        rot = 0, vjust = 0.5, hjust = 0.25, 
+                        gp = gpar(
+                          cex = 1,
+                          fontsize = 14, # fontfamily = "LM Roman 10" ,
+                          fontface = "italic"
+                          ))) 
+# Saving figure
+file_name = paste0(file = output, "Fig10_HEATMAP",
+                   ".pdf", sep="")
+pdf(file_name, family = "Times",
+    width=10, height=6, bg = "transparent", colormodel = "rgb", compress = T)
+pt
+dev.off()
+# 
+# ============ Wavelet analysis ============
+# load("wavelet_data.RData")
+# C.guatucupa ####
+cguatucupa <- data.set[[10]]
+vars_key <- c('riv','chl')
+wv_list <- coherency_analysis(cguatucupa, vars_key)
+# saveRDS(wv_list, file="wv_coherence_cguatucupa_riv2_chl10.RData")
+# Plot
+file_name = paste0(file = output, "Fig11_Cguatucupa_WAVELET_COHERENCE",
+                   ".pdf", sep="")
+pdf(file_name, family = "Times",
+    width=9, height=12, bg = "transparent", colormodel = "cmyk", compress = T)
+par(mfrow=c(3,1))
+par(mar=c(2,5,4,3)) # down, left, up, right
+p1 = getWavelets.plot(wvc = wv_list[[1]],
+                 var_name = "River discharge", sp_name = "C. guatucupa",
+                 ulab = "A", cb = "y")
+par(mar=c(3,5,4,10.9)) # down, left, up, right
+p2 = getWavelets.plot(wvc = wv_list[[2]],
+                 var_name = "Chlorophyll-a", sp_name = "C. guatucupa",
+                 ulab = "B")
+par(mar=c(3,5,4,10.9))
+p3 = plot.new()
+dev.off()
+#
+# Clear console and environment keeping dataset, packages and functions ####
+cat("\014") 
+rm(list = setdiff(ls(), (c("data.set", "output", "pk", lsf.str()))))
+gc() # Free unused memory
+# M.furnieri ####
+mfurnieri <- data.set[[11]]
+vars_key <- c('kd', 'sss', 'wmi')
+wv_list <- coherency_analysis(mfurnieri, vars_key)
+# Plot
+file_name = paste0(file = output, "Fig12_Mfurnieri_WAVELET_COHERENCE",
+                   ".pdf", sep="")
+pdf(file_name, family = "Times",
+    width=9, height=12, bg = "transparent", colormodel = "cmyk", compress = T)
+par(mfrow=c(3,1))
+par(mar=c(2,5,4,3)) # down, left, up, right
+p1 = getWavelets.plot(wvc = wv_list[[1]],
+                 var_name = "Turbidity", sp_name = "M. furnieri",
+                 ulab = "A", cb = "y")
+par(mar=c(3,5,4,10.9)) # down, left, up, right
+p2 = getWavelets.plot(wvc = wv_list[[2]],
+                 var_name = "Sea surface salinity", sp_name = "M. furnieri",
+                 ulab = "B")
+par(mar=c(3,5,4,10.9)) # down, left, up, right
+p3 = getWavelets.plot(wvc = wv_list[[3]],
+                 var_name = "Wind mixing index", sp_name = "M. furnieri",
+                 ulab = "C")
+dev.off()
+# Clear console and environment keeping dataset, packages and functions ####
+cat("\014") 
+rm(list = setdiff(ls(), (c("data.set", "output", "pk", lsf.str()))))
+gc() # Free unused memory
+# M.hubbsi ####
+mhubbsi <- data.set[[12]]
+vars_key <- c('riv', 'chl', 'wmi')
+wv_list <- coherency_analysis(mhubbsi, vars_key)
+# Plot
+file_name = paste0(file = output, "Fig13_Mhubbsi_WAVELET_COHERENCE",
+                   ".pdf", sep="")
+pdf(file_name, family = "Times",
+    width=9, height=12, bg = "transparent", colormodel = "cmyk", compress = T)
+par(mfrow=c(3,1))
+par(mar=c(2,5,4,3)) # down, left, up, right
+p1 = getWavelets.plot(wvc = wv_list[[1]],
+                 var_name = "River discharge", sp_name = "M. hubbsi",
+                 ulab = "A", cb = "y")
+par(mar=c(3,5,4,11.1)) # down, left, up, right
+p2 = getWavelets.plot(wvc = wv_list[[2]],
+                 var_name = "Chlorophyll-a", sp_name = "M. hubbsi",
+                 ulab = "B")
+par(mar=c(3,5,4,11.1)) # down, left, up, right
+p3 = getWavelets.plot(wvc = wv_list[[3]],
+                 var_name = "Wind mixing index", sp_name = "M. hubbsi",
+                 ulab = "C")
+dev.off()
+
+# Clear console and environment keeping dataset, packages and functions ####
+cat("\014") 
+rm(list = setdiff(ls(), (c("data.set", "output",  "pk", lsf.str()))))
+gc() # Free unused memory
+# Average wavelet power for environmental variables ####
+df <- data.set[[13]]
+vars_key <- c('riv', 'kd', 'sss', 'chl', 'wmi')
+wv_x <- list()
+for (j in 1:length(vars_key)){
+  print(paste0(vars_key[j],'... ',j,'/',length(vars_key)))
+  my.data <- NULL
+  my.data <- as.data.frame(cbind(x = df[[vars_key[j]]]))
+  my.data[["date"]] <- as.POSIXct(df$date)
+  my.data <- my.data[complete.cases(my.data[,"x"]),]
+  print(my.data$date[1])
+  my.wx <- analyze.wavelet(my.data, "x", 
+                           loess.span = 0, dt = 1, dj = 1/100,
+                           lowerPeriod = 2, 
+                           upperPeriod = 128,
+                           make.pval = TRUE, n.sim = 1000,
+                           verbose = F)
+  wv_x[[j]] <-assign(paste0("wv_",vars_key[j]), my.wx)
+}
+# Elements for labels
+vars_n <- c('River discharge',
+            'Turbidity (kd)','Sea surface salinity (sss)',
+            'Chlorophyll-a (chl)', 'Wind mixing index (wmi)')
+ulab <- LETTERS[1:length(wv_x)]
+# Getting maximum power value
+max_cb <- max(to_vec(for(i in 1:length(wv_x))
+  max(wv_x[[i]]$Power.avg)))
+# Normalizing regarding maximum value
+for (k in 1:length(wv_x)){
+  wv_x[[k]]$Power.avg <- wv_x[[k]]$Power.avg/max_cb
+}
+# Plot al WPS in a single figure
+wps_lines <- list()
+for (j in 1:length(vars_key)){
+  wps_lines[[j]] <- data.frame(variable = vars_key[j],
+                               period = wv_x[[j]]$Period,
+                               wps = wv_x[[j]]$Power.avg)
+}
+wps_lines <- do.call(rbind, wps_lines)
+colorBlindBlack8  <- c("#0072B2", "#D55E00", "#E69F00","#44AA99", "#000000")
+lbls <- c("river discharge", "turbidity", "salinity", "chlorophyll-a", "wind")
+# Plot
+file_name = paste0(file = output, "Fig14_AVG_WPS_ENVIRONMENTAL",
+                   ".pdf", sep="")
+pdf(file_name, family = "Times",
+    width=6, height=6, bg = "transparent", colormodel = "cmyk", compress = T)
+wavelet_power.plot(wps_lines, colorBlindBlack8, vars_key, lbls)
+dev.off()
+#                 
