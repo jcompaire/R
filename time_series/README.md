@@ -12,10 +12,10 @@ This work was conducted by [Jesus C. Compaire](https://www.researchgate.net/prof
 ### Files description and workflow
 - `elevation_AUCFZ_ETOPO2022.tiff` contains elevation data for the study area retrieved from [ETOPO](https://doi.org/10.25921/fd45-gt74) 
 - `time_series_aucfz_data.RData` contains the time series of monthly commercial landings for the 1996-2021 period for [*Cynoscion guatucupa*](https://www.fishbase.se/summary/Cynoscion-guatucupa.html), [*Micropogonias furnieri*](https://www.fishbase.se/summary/Micropogonias-furnieri.html) and [*Merluccius hubbsi*](https://www.fishbase.se/summary/Merluccius-hubbsi.html).
-- `time_series_aucfz_functions.R` contains the algorithms and functions necessary to run the file "time_series_aucfz_code.R" .
+- `time_series_aucfz_functions.R` contains the algorithms and functions necessary to run the file "time_series_aucfz_code.R".
 - `time_series_aucfz_code.R` contains the code to load the dataset, perform the statistical analyses and get the outputs.
 
-The workflow to replicate the analyses is pretty easy: just ensure that you have in the same path the three previously mentioned files prior to running the last one. Note: necessary packages are listed at the beginning of thes file *time_series_aufc_code.R*.
+The workflow to replicate the analyses is pretty easy: just ensure that you have in the same path the three previously mentioned files prior to running the last one. Note: necessary packages are listed at the beginning of the file *time_series_aucfz_code.R*.
 
 ## References
 
