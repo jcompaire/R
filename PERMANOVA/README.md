@@ -1,4 +1,4 @@
-## An R script to perform a Permutational Multivariate Analysis of Variance (PERMANOVA) test.
+## An R script to perform a Permutational Multivariate Analysis of Variance (PERMANOVA) test
 
 In this example, you will able to evaluate if the prey abundance ingested by
 a fish species is related to habitat or particular specimen characteristics.
