@@ -2,7 +2,7 @@
 ## -- -- -- -- -- -- -- -- -- -- -- -- --
 ##
 ## Author: Jesus C. Compaire
-## Institution: Centro de Investigaciones del Mar y la Atmósfera (CIMA)
+## Institution: Centro para el Estudio de Sistemas Marinos (CESIMAR)
 ## Position: Postdoctoral researcher
 ## Contact details: jesus.canocompaire@uca.es
 ## Date created: Dec-2023
@@ -10,10 +10,10 @@
 ##
 ## Code to replicate the statistical analyses and generate figures 
 ## performed in the manuscript:
-## Compaire, J.C., Simionato C.G.  Moreira, D. & Acha, E.M. (2023).
+## Compaire, J.C., Simionato C.G.  Moreira, D. & Acha, E.M. (2024).
 ## Modeling environmental effects on fishery landings: A case study of 
 ## whitemouth croaker (Micropogonias furnieri) in the Southwestern
-## Atlantic shelf
+## Atlantic shelf, 108806, https://doi.org/10.1016/j.ecss.2024.108806
 ##
 ## -- -- -- -- -- -- -- -- -- -- -- -- --
 #
@@ -775,7 +775,7 @@ map_aucfz <- function(df, plygn = NULL, plygn2 = NULL,
       geom = "text", x = -56, y = -33.8, label = "Uruguay", 
       fontface = "plain", family = "Times", color = "grey22", size = 6) +
     annotate(
-      geom = "text", x = -53.2, y = -33.3, label = "Brasil", 
+      geom = "text", x = -53.2, y = -33.3, label = "Brazil", 
       fontface = "plain", family = "Times", color = "grey22", size = 3) +
     ## Rio de la Plata name
     annotate(
@@ -809,8 +809,8 @@ map_aucfz <- function(df, plygn = NULL, plygn2 = NULL,
       axis.title.x=element_blank(),
       axis.title.y=element_blank(),
       axis.text = element_text(size = 12),
-      axis.text.x = element_text(vjust = -0.5),
-      axis.text.y = element_text(hjust = -0.5),
+      axis.text.x = element_text(vjust = -0.5, color = "black"),
+      axis.text.y = element_text(hjust = -0.5, color = "black"),
       axis.text.x.top = element_blank(), # do not show top / right axis labels
       axis.text.y.right = element_blank(),
       axis.ticks.length = unit(-2, "mm"),
@@ -851,8 +851,10 @@ plot_de_lag <- function(df){
     theme(axis.title = element_text(face = "bold")) +
     theme(legend.title=element_blank(),
           legend.position= "none" ) +
-    theme(axis.line = element_line(colour = "black")) +
+    theme(axis.line = element_line(colour = "black"),
+         axis.ticks = element_line(colour = "black") +
     theme(axis.text.y = element_text(color = "black", size = 12)) +
+    theme(axis.text.x = element_text(color = "black", size = 12)) +
     labs(x = "", y = "") +
     theme(axis.text=element_text(size=12),
           axis.title.y =  element_blank(),
@@ -862,6 +864,7 @@ plot_de_lag <- function(df){
 ## Fig. 4 - RESPONSE PLOT - GLM ####
 glm_effect_single.plot <- function(var_x, model,
                                    xmin, xmax, interval,
+                                   yymin, yymax,
                                    col_line){
   if (!is.character(var_x))
     stop("'var_x' must be a character string")
@@ -895,6 +898,7 @@ glm_effect_single.plot <- function(var_x, model,
         y = Inf),
       col = "black", sides = "b", size = 0.3) +
     scale_x_continuous(breaks = seq(xmin, xmax, by = interval*2)) +
+    ylim(yymin, yymax) +  
     labs(y = "Landings (t)", x = var_x) +
     theme_tufte() +
     theme(axis.line = element_line(colour = "black"),
@@ -922,6 +926,7 @@ glm_effect_single.plot <- function(var_x, model,
 ## Fig. 5 - RESPONSE PLOT - GAM ####
 gam_effect_single.plot <- function(model, intercept, var_x,
                                    xmin, xmax, interval,
+                                   yymin, yymax,
                                    col_line){
   if (!is.list(model))
     stop("'model' must be a list containing the 'gam' function output")
@@ -963,6 +968,7 @@ gam_effect_single.plot <- function(model, intercept, var_x,
     # geom_hline(yintercept = 1/intercept, col = "black", alpha = 0.7, lwd = 0.7, lty = 2) +
     scale_x_continuous(breaks = seq(xmin, xmax, by = interval*2),
                        labels = label_number(accuracy = 0.01)) +
+    ylim(yymin, yymax) +
     labs(y = "Landings (t)", x = var_x) +
     theme_tufte() +
     theme(axis.line = element_line(colour = "black"),
