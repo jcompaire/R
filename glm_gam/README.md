@@ -19,4 +19,12 @@ This work was conducted by [Jesus C. Compaire](https://www.researchgate.net/prof
 The workflow to replicate the analyses is pretty easy: just ensure that you have in the same path the three previously mentioned files prior to running the last one. Note: necessary packages are listed at the beginning of the file *glm_gam_aucfz_code.R*.
 
 ## References
-Compaire, J.C., Simionato C.G.  Moreira, D. & Acha, E.M. (2024). Modeling environmental effects on fishery landings: A case study of whitemouth croaker (Micropogonias furnieri) in the Southwestern Atlantic shelf.
+
+[Compaire et al. (2024)](https://doi.org/10.1016/j.ecss.2024.108806)
+
+```
+Compaire, J.C., Simionato C.G.  Moreira, D. & Acha, E.M. (2024).
+Modeling environmental effects on fishery landings: A case study of whitemouth croaker (Micropogonias furnieri)
+in the Southwestern Atlantic shelf, 108806, https://doi.org/10.1016/j.ecss.2024.108806
+```
+[![DOI:10.1016/j.ecss.2024.108806](http://img.shields.io/badge/DOI-10.1016/j.ecss.2024.108806-b45f06.svg)](https://doi.org/10.1016/j.ecss.2024.108806)
