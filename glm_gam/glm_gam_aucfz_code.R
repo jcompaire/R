@@ -2,7 +2,7 @@
 ## -- -- -- -- -- -- -- -- -- -- -- -- --
 ##
 ## Author: Jesus C. Compaire
-## Institution: Centro de Investigaciones del Mar y la Atmósfera (CIMA)
+## Institution: Centro para el Estudio de Sistemas Marinos (CESIMAR)
 ## Position: Postdoctoral researcher
 ## Contact details: jesus.canocompaire@uca.es
 ## Date created: Dec-2023
@@ -10,10 +10,11 @@
 ##
 ## Code to replicate the statistical analyses and generate figures 
 ## performed in the manuscript:
-## Compaire, J.C., Simionato C.G.  Moreira, D. & Acha, E.M. (2023).
+## Compaire, J.C., Simionato C.G.  Moreira, D. & Acha, E.M. (2024).
 ## Modeling environmental effects on fishery landings: A case study of 
 ## whitemouth croaker (Micropogonias furnieri) in the Southwestern
-## Atlantic shelf
+## Atlantic shelf. Estuarine, Coastal and Shelf Science, 108806
+## https://doi.org/10.1016/j.ecss.2024.108806
 ##
 ## -- -- -- -- -- -- -- -- -- -- -- -- --
 #
@@ -22,7 +23,7 @@ cat("\014"); rm(list=ls()); graphics.off(); gc()
 # Load packages needed for analysis and figures ####
 pk <- c("comprehenr", "dplyr", "effects", "formula.tools", "ggplot2", "ggpubr",
         "ggthemes", "ggspatial", "gratia",  "grid", "gridExtra", "hrbrthemes",
-        "mgcv", "MuMIn", "ncdf4", "patchwork", "performance", "plyr",
+        "mgcv", "MuMIn", "ncdf4", "patchwork", "performance", "plyr", "raster",
         "readxl","rnaturalearth", "rlist", "scales", "stats", "stringr")
 lapply(pk, require, character.only = TRUE)
 # Set working directory, invoke functions and load datasets ####
@@ -51,10 +52,12 @@ clabs <- c("(0-50]", "(50-200]", "(200-1000]", "(1000-3000]",
 bathy$discrete <- cut(bathy$elevation, breaks = brks, labels = clabs) # discrete
 head(bathy)
 # Saving plot
-file_name = paste0(file = output , "Fig1_Map",
-                   ".pdf", sep="")
-pdf(file_name, width=9, height=6, bg = "transparent", colormodel = "cmyk",
-    compress = T)
+tiff("Fig1_Map.tiff", width=9, height=6, units="in",
+     res=1000, compression="lzw")
+# file_name = paste0(file = output , "Fig1_Map",
+#                    ".pdf", sep="")
+# pdf(file_name, width=9, height=6, bg = "transparent", colormodel = "cmyk",
+#     compress = T)
 par(mfcol=c(1,1))
 p1 <- map_aucfz(df = bathy, plygn = aucfz, plygn2 = spawning,
                 scale = "discrete", clabs)
@@ -310,7 +313,7 @@ p50 <- plot_de_lag(th50) +
     legend.direction = "vertical",
     legend.position = c(0.25,0.8),
     legend.key.size = unit(0.75, "cm"),
-    legend.text = element_text(size =  12)
+    legend.text = element_text(size =  12, color = "black")
     # legend.title = element_text(size = 15, face = "bold")
   ) +
   annotate(geom = "text", x = 2, y = 90, label = "50th",
@@ -340,9 +343,11 @@ p75 <- plot_de_lag(th75) +
       face = "bold", size = 20)
   )
 # Merging plots ---------------------------------------------------------------
-file_name = paste0(file = output , "Fig2_GLMs_summarized",
-                   ".pdf", sep="")
-pdf(file_name, width=12, height=6, bg = "transparent", colormodel = "cmyk")
+tiff("Fig2_GLMs_summarized.tiff", width=12, height=6, units="in",
+     res=1000, compression="lzw")
+# file_name = paste0(file = output , "Fig2_GLMs_summarized",
+#                   ".pdf", sep="")
+# pdf(file_name, width=12, height=6, bg = "transparent", colormodel = "cmyk")
 par(mfcol=c(1,1))
 figure <- ggarrange(p50, p25, p75, ncol = 3, nrow = 1, common.legend = F)
 annotate_figure(
@@ -484,6 +489,7 @@ for(i in 1:3){
   interval <- intervals[[i]][3]
   p <- plot(glm_effect_single.plot(paste(vrs[i]), model_f,
                                    xmin, xmax, interval,
+                                   10^4, 10^4*3,
                                    col_line = col_line[i]))
   plot_list[[i]] <- p + labs(tag = LETTERS[i]) +
     theme(
@@ -492,10 +498,12 @@ for(i in 1:3){
         face = "bold", size = 20)
     ) 
 }
-# 
-file_name = paste0(file = output , "Fig4_GLM_selected",
-                   ".pdf", sep="")
-pdf(file_name, width=12, height=6, bg = "transparent", colormodel = "cmyk")
+#
+tiff("Fig4_GLM_selected.tiff", width=12, height=6, units="in",
+     res=1000, compression="lzw")
+# file_name = paste0(file = output , "Fig4_GLM_selected",
+#                   ".pdf", sep="")
+#pdf(file_name, width=12, height=6, bg = "transparent", colormodel = "cmyk")
 par(mfcol=c(1,1))
 grid.arrange(grobs = plot_list, nrow = 2, ncol = 2)
 dev.off()
@@ -643,10 +651,10 @@ sink() # sets the output back to the console
 closeAllConnections() # to print on the console again
 gams_summary_fm <- setNames(gams_summary_fm, 
                             c(fmly[[1]]$family,fmly[[2]]$family))
-save(gams_summary_fm, file = paste0('GAMS_summary_fm.RData'))
+save(gams_summary_fm, file = paste0('GAMs_summary_fm.RData'))
 # 
 ## GAMs plot summarized ####
-load(paste0("GAMs_summary_fm_FX22.RData"))
+load(paste0("GAMs_summary_fm.RData"))
 # Checking percentiles from output file (.txt) to discard those models with
 # high concurvity among variables (worst > 0.5)
 ix <- c('enso','sam','soi','river')
@@ -767,9 +775,11 @@ p75 <- plot_de_lag(th75) +
       face = "bold", size = 20)
   )
 # Merging plots ---------------------------------------------------------------
-file_name = paste0(file = output , "Fig3_GAMs_summarized",
-                   ".pdf", sep="")
-pdf(file_name, width=12, height=6, bg = "transparent", colormodel = "cmyk")
+tiff("Fig3_GAMs_summarized.tiff", width=12, height=6, units="in",
+     res=1000, compression="lzw")                       
+# file_name = paste0(file = output , "Fig3_GAMs_summarized",
+#                    ".pdf", sep="")
+# pdf(file_name, width=12, height=6, bg = "transparent", colormodel = "cmyk")
 par(mfcol=c(1,1))
 figure <- ggarrange(p50, p25, p75, ncol = 3, nrow = 1, common.legend = F)
 annotate_figure(
@@ -860,6 +870,7 @@ for(i in 1:length(pf)){
   interval <- intervals[[i]][3]
   p <- plot(gam_effect_single.plot(model_f, intercept, paste(vrs[i]),
                                    xmin, xmax, interval,
+                                   10⁴4, 10^4*5,
                                    col_line = col_line[i]))
   plot_list[[i]] <- p + labs(tag = LETTERS[i]) +
     theme(
@@ -868,9 +879,11 @@ for(i in 1:length(pf)){
         face = "bold", size = 20)
     ) 
 }
-file_name = paste0(file = output , "Fig5_GAM_selected",
-                   ".pdf", sep="")
-pdf(file_name, width=12, height=6, bg = "transparent", colormodel = "cmyk")
+tiff("Fig5_GAM_selected.tiff", width=12, height=6, units="in",
+     res=1000, compression="lzw")
+# file_name = paste0(file = output , "Fig5_GAM_selected",
+#                    ".pdf", sep="")
+# pdf(file_name, width=12, height=6, bg = "transparent", colormodel = "cmyk")
 par(mfcol=c(1,1))
 grid.arrange(grobs = plot_list, nrow = 1, ncol = 2)
 dev.off()
