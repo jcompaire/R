@@ -10,7 +10,7 @@
 ##
 ## Code to replicate the statistical analyses and generate figures 
 ## performed in the manuscript:
-## Compaire, J.C., Acha, E.M., Moreira, D. & Simionato C.G. (2023).
+## Compaire, J.C., Acha, E.M., Moreira, D. & Simionato C.G. (2024).
 ## Time series modeling of coastal fishery landings on the Southwestern
 ## Atlantic shelf: influence of environmental drivers
 ##
@@ -356,7 +356,7 @@ map_aucfz <- function(df, plygn = NULL, scale = NULL, clabs = NULL, ...){
       geom = "text", x = -56, y = -33.8, label = "Uruguay", 
       fontface = "plain", family = "Times", color = "grey22", size = 6) +
     annotate(
-      geom = "text", x = -53.2, y = -33.3, label = "Brasil", 
+      geom = "text", x = -53.2, y = -33.3, label = "Brazil", 
       fontface = "plain", family = "Times", color = "grey22", size = 3) +
     ## Rio de la Plata name
     annotate(
