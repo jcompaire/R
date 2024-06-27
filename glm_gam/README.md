@@ -1,8 +1,8 @@
 ## An R repository for running Generalized Linear Models (GLMs) and Generalized Additive Models (GAMs)
 
 This repository contains R scripts to replicate the analyses performed in the manuscript 
-"***Modeling environmental effects on fishery landings: A case study of whitemouth croaker (_Micropogonias furnieri_) in the Southwestern
-Atlantic shelf***". The code can be used not only to compute statistical analyses but also to generate all figures and outputs presented in the manuscript. Our goal is to increase transparency and reproducibility in research.
+["***Modeling environmental effects on fishery landings: A case study of whitemouth croaker (_Micropogonias furnieri_) in the Southwestern
+Atlantic shelf***"](https://doi.org/10.1016/j.ecss.2024.108806). The code can be used not only to compute statistical analyses but also to generate all figures and outputs presented in the manuscript. Our goal is to increase transparency and reproducibility in research.
 
 ### Overwiew
 We investigated the effect of environmental variability on commercial landings of the whitemouth croaker (_Micropogonias furnieri_) caught at the Rio de la Plata estuary and its maritime front (Southwestern Atlantic Ocean) using Generalized Linear Models (GLMs) and Generalized Additive Models (GAMs). Our results prove that GAMs outperform GLMs in capturing the underlying dynamics when assessing the impact of environmental variability on fisheries.
