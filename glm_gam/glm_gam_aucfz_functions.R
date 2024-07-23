@@ -13,7 +13,7 @@
 ## Compaire, J.C., Simionato C.G.  Moreira, D. & Acha, E.M. (2024).
 ## Modeling environmental effects on fishery landings: A case study of 
 ## whitemouth croaker (Micropogonias furnieri) in the Southwestern
-## Atlantic shelf. Estuarine, Coastal and Shelf Science, 108806
+## Atlantic shelf. Estuarine, Coastal and Shelf Science, 305, 108806
 ## https://doi.org/10.1016/j.ecss.2024.108806
 ##
 ## -- -- -- -- -- -- -- -- -- -- -- -- --
