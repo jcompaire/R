@@ -13,6 +13,7 @@
 ## Compaire, J.C., Acha, E.M., Moreira, D. & Simionato C.G. (2024).
 ## Time series modeling of coastal fishery landings on the Southwestern
 ## Atlantic shelf: influence of environmental drivers
+## https://doi.org/10.1111/fog.12688
 ##
 ## -- -- -- -- -- -- -- -- -- -- -- -- --
 #
