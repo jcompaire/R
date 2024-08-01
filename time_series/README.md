@@ -23,6 +23,6 @@ The workflow to replicate the analyses is pretty easy: just ensure that you have
 ```
 Compaire, J.C., Acha, E.M., Moreira, D. & Simionato C.G. (2024).
 Time series modeling of coastal fishery landings on the Southwestern Atlantic shelf: influence of environmental drivers.
-Fisheries Oceanography, in press, 10.1002/fog.12688
+Fisheries Oceanography, e12688, 10.1002/fog.12688
 ```
 [![DOI:10.1111/fog.12688](http://img.shields.io/badge/DOI-10.1111/fog.12688-b45f06.svg)](https://doi.org/10.1111/fog.12688)
