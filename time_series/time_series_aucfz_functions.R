@@ -450,7 +450,7 @@ monthly_peaks.plot <- function(df){
   pl
 }
 # 
-## Figs. 3, 4, 5 - TIME SERIES: OBSERVED, FITTED AND FORECAST VALUES - 7, 8, 9   ####
+## Figs. 3, 4, 5 - TIME SERIES: OBSERVED, FITTED AND FORECAST VALUES ####
 obs_fit_for.plot <- function(x, y, z, ufit, lfit, ufor, lfor,
                              main = NULL, line_col, shaded_col ){
   if (!is.numeric(x) || !is.numeric(y) || !is.numeric(z))
@@ -496,7 +496,7 @@ obs_fit_for.plot <- function(x, y, z, ufit, lfit, ufor, lfor,
           legend.text = element_text(size = 16),
           legend.key.size = unit(1, "cm"))
 }
-## Fig. 6 - HEATMAP - 10 ====
+## Fig. 6 - HEATMAP ====
 heatmap.plot <- function(df, upperindex = NULL, ylabs = NULL, ...){
   if (!is.data.frame(df))
     stop("'df' must be a dataframe containing species and variable names,
@@ -579,7 +579,7 @@ heatmap.plot <- function(df, upperindex = NULL, ylabs = NULL, ...){
                                    hjust = -0.01, vjust = 2)
     )
 }
-## Figs. 7, 8, 9 - WAVELET COHERENCY AND PHASE ANALYSES - 11, 12, 13 ====
+## Figs. 7, 8, 9 - WAVELET COHERENCY AND PHASE ANALYSES ====
 getWavelets.plot = function(wvc, var_name, sp_name, ulab, cb = NULL) {
   if (!is.list(wvc))
     stop("'wvc' must be a list containing analysis coherence results")
@@ -622,7 +622,7 @@ getWavelets.plot = function(wvc, var_name, sp_name, ulab, cb = NULL) {
         cex = 2, font = 2)
   # return(wvc)
 }
-## Fig. 10 - AVERAGE WAVELET POWER SPECTRUM ENVIRONMENTAL - 14 ====
+## Fig. 10 - AVERAGE WAVELET POWER SPECTRUM ENVIRONMENTAL ====
 wavelet_power.plot <- function(wps_lines, color_patterns, lmts, lbls){
   if (!is.data.frame(wps_lines))
     stop("'wps_lines' must be a dataframe containing wavelet power spectrum
@@ -814,7 +814,7 @@ bp_landings.plot <- function(df){
           axis.title=element_text(size=14,face="plain")) 
 }
 #
-## Figs. S3, S8 - DECOM.PLOT - S4 ====
+## Figs. S3, S8 - DECOM.PLOT ====
 decomp.plot <- function(x, main = NULL, type = NULL, ...){
   mylist <- c("x", "seasonal", "trend", "random", "figure", "type")
   if(!isTRUE(all(mylist %in% names(x), TRUE)))
@@ -890,7 +890,7 @@ decomp.plot <- function(x, main = NULL, type = NULL, ...){
   p
 }
 #
-## Fig. S4 & Figs. S5b, S6b, S7b - CORRELOGRAMS - 3, 4b,5b,6b####
+## Fig. S4 & Figs. S5b, S6b, S7b - CORRELOGRAMS ####
 correlograms.plot <- function(x, lags = NULL, main = NULL,
                               upperindex = NULL, ...){
   if (!is.numeric(x))
@@ -973,7 +973,7 @@ correlograms.plot <- function(x, lags = NULL, main = NULL,
   pt
 }
 #
-## Figs. S5a, S6a, S7a - RESIDUALS_TEMPORAL SERIES - 4a,5a,6a ####
+## Figs. S5a, S6a, S7a - RESIDUALS_TEMPORAL SERIES ####
 residuals_ts.plot <- function(x, upperindex = NULL, ...){
   if (!is.numeric(x))
     stop("'x' must be a numeric vector")
@@ -999,7 +999,7 @@ residuals_ts.plot <- function(x, upperindex = NULL, ...){
                                     hjust = -0.05, vjust = -4))
 }
 #
-## Figs. S5c, S6c, S7c - RESIDUALS_HISTOGRAM - 4c, 5c, 6c ####
+## Figs. S5c, S6c, S7c - RESIDUALS_HISTOGRAM ####
 residuals_hist.plot <- function(x, pval = NULL, upperindex = NULL, ...){
   if (!is.numeric(x))
     stop("'x' must be a numeric vector")
@@ -1088,7 +1088,7 @@ residuals_hist.plot <- function(x, pval = NULL, upperindex = NULL, ...){
                                        hjust = -0.05, vjust = 1.8))
 }
 #
-## Figs. S5d, S6d, S7d - RESIDUALS_p-VALUES - 4d, 5d, 6d  ####
+## Figs. S5d, S6d, S7d - RESIDUALS_p-VALUES ####
 residuals_pv.plot <- function(df, upperindex = NULL,...){
   if (!is.data.frame(df))
     stop("'df' must be a dataframe got from LjungBoxTest")
