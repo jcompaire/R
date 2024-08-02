@@ -10,10 +10,10 @@
 ##
 ## Code to replicate the statistical analyses and generate figures 
 ## performed in the manuscript:
-## Compaire, J.C., Acha, E.M., Moreira, D. & Simionato C.G. (2023).
+## Compaire, J.C., Acha, E.M., Moreira, D. & Simionato C.G. (2024).
 ## Time series modeling of coastal fishery landings on the Southwestern
-## Atlantic shelf: influence of environmental drivers
-## https://doi.org/doi/10.1111/fog.12688
+## Atlantic shelf: influence of environmental drivers.
+## Fisheries Oceanography, e12688, https://doi.org/10.1111/fog.12688
 ##
 ## -- -- -- -- -- -- -- -- -- -- -- -- --
 #
@@ -21,10 +21,11 @@
 cat("\014") 
 rm(list=ls()) 
 # Load packages needed for analysis and figures ####
-pk <- c("astsa", "car", "comprehenr", "cowplot", "devtools", "FitAR", "forecast",
-        "ggplot2", "ggsn", "ggspatial", "ggthemes", "lubridate", "Metrics",
-        "ncdf4", "patchwork", "plyr", "dplyr", "raster", "Rcpp", "readxl",
-        "rnaturalearth", "sf", "scales", "stats", "tidyverse", "tseries", "zoo")
+pk <- c("astsa", "car", "comprehenr", "cowplot", "devtools", "dplyr", "FitAR",
+        "forecast", "ggh4x", "ggplot2", "ggpubr", "ggsn", "ggspatial",
+        "ggthemes", "grid", "lubridate", "Metrics", "ncdf4", "patchwork",
+        "plyr", "raster", "Rcpp", "readxl", "rnaturalearth", "sf", "scales",
+        "stats", "tidyverse", "tseries", "WaveletComp", "zoo")
 lapply(pk, require, character.only = TRUE)
 # Set working directory, invoke functions and load datasets  ####
 setwd("~/gdrive/GitHub/R/TimeSeries/") # directory
@@ -52,8 +53,8 @@ bathy$discrete <- cut(bathy$elevation, breaks = brks, labels = clabs) # discrete
 head(bathy)
 file_name = paste0(file = output , "Fig1_Map",
                    ".pdf", sep="")
-pdf(file_name, width=9, height=6, bg = "transparent", colormodel = "cmyk", 
-    compress = T)
+pdf(file_name, width=9, height=6, bg = "transparent", colormodel = "cmyk",
+     compress = T)
 par(mfcol=c(1,1))
 p1 <- map_aucfz(df = bathy, plygn = aucfz, scale = "discrete", clabs)
 # South America map
@@ -90,7 +91,7 @@ rm(list = setdiff(ls(), (c("data.set", "output", "pk", lsf.str()))))
 gc() # Free unused memory
 # ============ CPUE vs COMMERCIAL LANDINGS ======================== ####
 df <- as.data.frame(data.set[2])
-file_name = paste0(file = output , "Fig2_CPUE_vs_LANDINGS",
+file_name = paste0(file = output , "FigS1_CPUE_vs_LANDINGS",
                    ".pdf", sep="")
 pdf(file_name, width=12, height=6, bg = "transparent", colormodel = "cmyk")
 par(mfcol=c(1,1))
@@ -104,7 +105,7 @@ for(p in 3:5){
 }
 # Combine the list of data frames into one data frame by row
 df <- bind_rows(df, .id = "label")
-file_name = paste0(file = output , "Fig3_BOXPLOTS_LANDINGS",
+file_name = paste0(file = output , "FigS2_BOXPLOTS_LANDINGS",
                    ".pdf", sep="")
 pdf(file_name, width=12, height=6, bg = "transparent", colormodel = "cmyk")
 par(mfcol=c(1,1))
@@ -122,7 +123,7 @@ spname <- sp$Scientific_name[1] # Get scientific name
 ## Visualizing the time series ####
 ## Saving plot
 spname_file <- gsub(". ", "", spname) 
-file_name = paste0(file = output,'Fig4a_', spname_file, "_TimeSeries",
+file_name = paste0(file = output,'Fig2a_', spname_file, "_TimeSeries",
                    ".pdf", sep="")
 pdf(file_name, width=12, height=6, bg = "transparent", colormodel = "cmyk")
 par(mfcol=c(1,1))
@@ -157,7 +158,7 @@ acf2(x.ts_24yr, max.lag = 36, plot = TRUE, main = spname)
 #  effect, and residual
 x.ts.decom = decompose(x.ts_24yr, type = "additive", filter = NULL)
 ## Saving plot
-file_name = paste0(file = output,'FigS1a_', spname_file, "_DECOMPLOT",
+file_name = paste0(file = output,'FigS3a_', spname_file, "_DECOMPLOT",
                    ".pdf", sep="")
 pdf(file_name, width=12, height=6, bg = "transparent", colormodel = "cmyk")
 par(mfcol=c(1,1))
@@ -201,7 +202,7 @@ tseries::adf.test(diff.x.ts.12, k = 12) # lag order = 12 since data are monthly
 #  autocorrelation function (PACF) are analyzed on the stationary time series
 #  to evaluate the lag orders of the AR and MA processes
 ## Saving plot
-file_name = paste0(file = output, 'Fig5a_', spname_file, "_CORRELOGRAMS",
+file_name = paste0(file = output, 'FigS4a_', spname_file, "_CORRELOGRAMS",
                    ".pdf", sep="")
 pdf(file_name, width=12, height=6, bg = "transparent", colormodel = "cmyk")
 par(mfcol=c(1,1))
@@ -224,15 +225,16 @@ best_model <- Arima(x.ts.BoxCox,
 cor(x.ts_24yr, best_model[["fitted"]], method = "pearson")
 ## Graphical DIAGNOSIS OF THE RESIDUALS ----------------------------------------
 ## Saving plot
-file_name = paste0(file = output, "Fig6_", spname_file,
+file_name = paste0(file = output, "FigS5_", spname_file,
                    "_RESIDUAL_DIAGNOSIS", ".pdf", sep="")
 pdf(file_name, width=12, height=6, bg = "transparent", colormodel = "cmyk")
 ## A) Temporal evolution of residuals ====
 res_bm <- best_model$residuals
 stdres <- (res_bm)/(sqrt(best_model$sigma2))
 namec <- rep('C. guatucupa', length(stdres))
-dates <- as.Date(x.ts_24yr)
+dates<- as.Date(x.ts_24yr)
 rsdls_1 <- data.frame(namec, stdres, dates)
+# save(rsdls, file = 'residuals_Mhubbsi.RData')
 pRES <- residuals_ts.plot(x = stdres, upperindex = 'A')
 ## B) ACF and PACF of residuals ====
 pCOR <- correlograms.plot(x = res_bm, lags = 36,
@@ -300,9 +302,11 @@ lo95for <- ts(bxcx(
   start = c(2020,1), frequency = 12)
 lo95for[lo95for < 0] <- 0
 #
+# ff <- cbind(for_values, up95for, lo95for)
+# write_xlsx(as.data.frame(ff), '~/gdrive/GitHub/R/TimeSeries/dff.xlsx')
 ## Plotting time series (observed, fitted and forecasted values) --------------
 ## Saving plot
-file_name = paste0(file = output, "Fig9_" ,spname_file, "_FINAL_PLOT",
+file_name = paste0(file = output, "Fig3_" ,spname_file, "_FINAL_PLOT",
                    ".pdf", sep="")
 pdf(file_name, width=12, height=6, bg = "transparent", colormodel = "cmyk")
 line_col <- c('black', "#1B9E77", "darkred") # colour lines
@@ -312,7 +316,7 @@ obs_fit_for.plot(x = x.ts, y = fit_values, z = for_values,
                  ufit = up95fit, lfit = lo95fit,
                  ufor = up95for, lfor = lo95for,
                  main = spname,
-                 line_col, shad_col)
+            line_col, shad_col)
 dev.off()
 #
 ## ----------------------------------------------------------------------------
@@ -327,7 +331,7 @@ spname <- sp$Scientific_name[1] # Get scientific name
 ## Visualizing the time series ####
 ## Saving plot
 spname_file <- gsub(". ", "", spname) 
-file_name = paste0(file = output,'Fig4b_', spname_file, "_TimeSeries",
+file_name = paste0(file = output,'Fig2b_', spname_file, "_TimeSeries",
                    ".pdf", sep="")
 pdf(file_name, width=12, height=6, bg = "transparent", colormodel = "cmyk")
 par(mfcol=c(1,1))
@@ -364,7 +368,7 @@ acf2(x.ts_24yr, max.lag = 36, plot = TRUE, main = spname)
 #  effect, and residual
 x.ts.decom = decompose(x.ts_24yr, type = "additive", filter = NULL)
 ## Saving plot
-file_name = paste0(file = output, "FigS1b_",spname_file, "_DECOMPLOT",
+file_name = paste0(file = output, "FigS3b_",spname_file, "_DECOMPLOT",
                    ".pdf", sep="")
 pdf(file_name, width=12, height=6, bg = "transparent", colormodel = "cmyk")
 par(mfcol=c(1,1))
@@ -403,7 +407,7 @@ tseries::adf.test(diff.x.ts.12, k = 12) # lag order = 12 since data are monthly
 #  autocorrelation function (PACF) are analyzed on the stationary time series
 #  to evaluate the lag orders of the AR and MA processes
 ## Saving plot
-file_name = paste0(file = output, 'Fig5b_', spname_file, "_CORRELOGRAMS",
+file_name = paste0(file = output, 'FigS4b_', spname_file, "_CORRELOGRAMS",
                    ".pdf", sep="")
 pdf(file_name, width=12, height=6, bg = "transparent", colormodel = "cmyk")
 par(mfcol=c(1,1))
@@ -425,7 +429,7 @@ best_model <- Arima(x.ts_24yr,
 cor(x.ts_24yr, best_model[["fitted"]], method = "pearson")
 ## Graphical DIAGNOSIS OF THE RESIDUALS ----------------------------------------
 ## Saving plot
-file_name = paste0(file = output, "Fig7_" ,spname_file,
+file_name = paste0(file = output, "FigS6_" ,spname_file,
                    "_RESIDUAL_DIAGNOSIS", ".pdf", sep="")
 pdf(file_name, width=12, height=6, bg = "transparent", colormodel = "cmyk")
 ## A) Temporal evolution of residuals ====
@@ -433,6 +437,7 @@ res_bm <- best_model$residuals
 stdres <- (res_bm)/(sqrt(best_model$sigma2))
 namec <- rep('M. furnieri', length(stdres))
 rsdls_2 <- data.frame(namec, stdres, dates)
+# save(rsdls, file = 'residuals_Mhubbsi.RData') 
 pRES <- residuals_ts.plot(x = stdres, upperindex = 'A')
 ## B) ACF and PACF of residuals ====
 pCOR <- correlograms.plot(x = res_bm, lags = 36, upperindex = 'B')
@@ -489,9 +494,11 @@ up95for <- ts(model_forecast$upper, start = c(2020,1), frequency = 12)
 lo95for <- ts(model_forecast$lower, start = c(2020,1), frequency = 12)
 lo95for[lo95for < 0] <- 0
 #
+ff <- cbind(for_values, up95for, lo95for)
+# write_xlsx(as.data.frame(ff), '~/gdrive/GitHub/R/TimeSeries/dff2.xlsx')
 ## Plotting time series (observed, fitted and forecasted values) --------------
 ## Saving plot
-file_name = paste0(file = output, "Fig10_",spname_file, "_FINAL_PLOT",
+file_name = paste0(file = output, "Fig4_",spname_file, "_FINAL_PLOT",
                    ".pdf", sep="")
 pdf(file_name, width=12, height=6, bg = "transparent", colormodel = "cmyk")
 line_col <- c('black', "#D95F02", "darkred") # colour lines
@@ -501,14 +508,14 @@ obs_fit_for.plot(x = x.ts, y = fit_values, z = for_values,
                  ufit = up95fit, lfit = lo95fit,
                  ufor = up95for, lfor = lo95for,
                  main = spname,
-            line_col, shad_col)
+                 line_col, shad_col)
 dev.off()
 # 
 ## ----------------------------------------------------------------------------
 # Clear console and environment keeping dataset, packages and functions ####
 cat("\014") 
 rm(list = setdiff(ls(), (c("rsdls_1", "rsdls_2", "dates",
-                           "data.set" ,"df", "output", "pk", lsf.str()))))
+  "data.set" ,"df", "output", "pk", lsf.str()))))
 # ============ Merluccius hubbsi - Argentine hake ============ ####
 #  https://www.fishbase.se/summary/325
 sp <- subset(df, label == 3) # Subset by species
@@ -516,7 +523,7 @@ spname <- sp$Scientific_name[1] # Get scientific name
 ## Visualizing the time series ####
 ## Saving plot
 spname_file <- gsub(". ", "", spname) 
-file_name = paste0(file = output,'Fig4c_', spname_file, "_TimeSeries",
+file_name = paste0(file = output,'Fig2c_', spname_file, "_TimeSeries",
                    ".pdf", sep="")
 pdf(file_name, width=12, height=6, bg = "transparent", colormodel = "cmyk")
 par(mfcol=c(1,1))
@@ -550,7 +557,7 @@ acf2(x.ts_24yr, max.lag = 36, plot = TRUE, main = spname)
 #  effect, and residual
 x.ts.decom = decompose(x.ts_24yr, type = "additive", filter = NULL)
 ## Saving plot
-file_name = paste0(file = output, "FigS1c_" ,spname_file, "_DECOMPLOT",
+file_name = paste0(file = output, "FigS3c_" ,spname_file, "_DECOMPLOT",
                    ".pdf", sep="")
 pdf(file_name, width=12, height=6, bg = "transparent", colormodel = "cmyk")
 par(mfcol=c(1,1))
@@ -589,7 +596,7 @@ tseries::adf.test(diff.x.ts.12, k = 12) # lag order = 12 since data are monthly
 #  autocorrelation function (PACF) are analyzed on the stationary time series
 #  to evaluate the lag orders of the AR and MA processes
 ## Saving plot
-file_name = paste0(file = output, "Fig5c_", spname_file, "_CORRELOGRAMS",
+file_name = paste0(file = output, "FigS4c_", spname_file, "_CORRELOGRAMS",
                    ".pdf", sep="")
 pdf(file_name, width=12, height=6, bg = "transparent", colormodel = "cmyk")
 par(mfcol=c(1,1))
@@ -611,7 +618,7 @@ best_model <- Arima(x.ts_24yr,
 cor(x.ts_24yr, best_model[["fitted"]], method = "pearson")
 ## Graphical DIAGNOSIS OF THE RESIDUALS ----------------------------------------
 ## Saving plot
-file_name = paste0(file = output, "Fig8_", spname_file,
+file_name = paste0(file = output, "FigS7_", spname_file,
                    "_RESIDUAL_DIAGNOSIS", ".pdf", sep="")
 pdf(file_name, width=12, height=6, bg = "transparent", colormodel = "cmyk")
 ## A) Temporal evolution of residuals ====
@@ -677,9 +684,11 @@ up95for <- ts(model_forecast$upper, start = c(2020,1), frequency = 12)
 lo95for <- ts(model_forecast$lower, start = c(2020,1), frequency = 12)
 lo95for[lo95for < 0] <- 0
 #
+ff <- cbind(for_values, up95for, lo95for)
+# write_xlsx(as.data.frame(ff), '~/gdrive/GitHub/R/TimeSeries/dff3.xlsx')
 ## Plotting time series (observed, fitted and forecasted values) --------------
 ## Saving plot
-file_name = paste0(file = output, "Fig11_", spname_file, "_FINAL_PLOT",
+file_name = paste0(file = output, "Fig5_", spname_file, "_FINAL_PLOT",
                    ".pdf", sep="")
 pdf(file_name, width=12, height=6, bg = "transparent", colormodel = "cmyk")
 line_col <- c('black', "#7570B3", "darkred") # colour lines
@@ -689,7 +698,7 @@ obs_fit_for.plot(x = x.ts, y = fit_values, z = for_values,
                  ufit = up95fit, lfit = lo95fit,
                  ufor = up95for, lfor = lo95for,
                  main = spname,
-            line_col, shad_col)
+                 line_col, shad_col)
 dev.off()
 # 
 ## ----------------------------------------------------------------------------
@@ -703,7 +712,7 @@ x.ts <- ts(sp[c("Landing")],
            start = c(1998,1), end = c(2021,12), frequency = 12)
 x.ts.decom = decompose(x.ts, type = "additive", filter = NULL)
 spname_file <- gsub(". ", "", spname) 
-file_name = paste0(file = output, "FigS2a_",spname_file, "_DECOMPLOT",
+file_name = paste0(file = output, "FigS8a_",spname_file, "_DECOMPLOT",
                    ".pdf", sep="")
 pdf(file_name, width=12, height=6, bg = "transparent", colormodel = "cmyk")
 par(mfcol=c(1,1))
@@ -725,7 +734,7 @@ x.ts <- ts(sp[c("Landing")],
            start = c(1997,1), end = c(2021,12), frequency = 12)
 x.ts.decom = decompose(x.ts, type = "additive", filter = NULL)
 spname_file <- gsub(". ", "", spname) 
-file_name = paste0(file = output, "FigS2b_",spname_file, "_DECOMPLOT",
+file_name = paste0(file = output, "FigS8b_",spname_file, "_DECOMPLOT",
                    ".pdf", sep="")
 pdf(file_name, width=12, height=6, bg = "transparent", colormodel = "cmyk")
 par(mfcol=c(1,1))
@@ -747,7 +756,7 @@ x.ts <- ts(sp[c("Landing")],
            start = c(1998,1), end = c(2021,12), frequency = 12)
 x.ts.decom = decompose(x.ts, type = "additive", filter = NULL)
 spname_file <- gsub(". ", "", spname) 
-file_name = paste0(file = output, "FigS2c_",spname_file, "_DECOMPLOT",
+file_name = paste0(file = output, "FigS8c_",spname_file, "_DECOMPLOT",
                    ".pdf", sep="")
 pdf(file_name, width=12, height=6, bg = "transparent", colormodel = "cmyk")
 par(mfcol=c(1,1))
@@ -762,7 +771,10 @@ dp + plot_annotation(subtitle = "C",
                          hjust = 0.02, vjust = -4)))
 dev.off()
 #
--------------------
+##
+
+
+## ----------------------------------------------------------------------------
 # Clear console and environment keeping dataset, packages and functions ####
 cat("\014") 
 rm(list = setdiff(ls(), (c("data.set" ,"output", "pk", lsf.str()))))
@@ -798,7 +810,7 @@ pt <- annotate_figure(pp,
                           fontface = "italic"
                           ))) 
 # Saving figure
-file_name = paste0(file = output, "Fig10_HEATMAP",
+file_name = paste0(file = output, "Fig6_HEATMAP",
                    ".pdf", sep="")
 pdf(file_name, family = "Times",
     width=10, height=6, bg = "transparent", colormodel = "rgb", compress = T)
@@ -806,14 +818,15 @@ pt
 dev.off()
 # 
 # ============ Wavelet analysis ============
-# load("wavelet_data.RData")
 # C.guatucupa ####
 cguatucupa <- data.set[[10]]
 vars_key <- c('riv','chl')
 wv_list <- coherency_analysis(cguatucupa, vars_key)
-# saveRDS(wv_list, file="wv_coherence_cguatucupa_riv2_chl10.RData")
+saveRDS(wv_list, file="wv_coherence_cguatucupa_riv2_chl10.RData")
+# wv_list <- readRDS(paste0(getwd(),
+#                           "wv_coherence_cguatucupa_riv2_chl10.RData"))
 # Plot
-file_name = paste0(file = output, "Fig11_Cguatucupa_WAVELET_COHERENCE",
+file_name = paste0(file = output, "Fig7_Cguatucupa_WAVELET_COHERENCE",
                    ".pdf", sep="")
 pdf(file_name, family = "Times",
     width=9, height=12, bg = "transparent", colormodel = "cmyk", compress = T)
@@ -838,8 +851,11 @@ gc() # Free unused memory
 mfurnieri <- data.set[[11]]
 vars_key <- c('kd', 'sss', 'wmi')
 wv_list <- coherency_analysis(mfurnieri, vars_key)
+saveRDS(wv_list, file="wv_coherence_mfurnieri_kd8_sss3_wmi14.RData")
+# wv_list <- readRDS(paste0(getwd(),
+#                           "/wv_coherence_mfurnieri_kd8_sss3_wmi14.RData"))
 # Plot
-file_name = paste0(file = output, "Fig12_Mfurnieri_WAVELET_COHERENCE",
+file_name = paste0(file = output, "Fig8_Mfurnieri_WAVELET_COHERENCE",
                    ".pdf", sep="")
 pdf(file_name, family = "Times",
     width=9, height=12, bg = "transparent", colormodel = "cmyk", compress = T)
@@ -865,8 +881,11 @@ gc() # Free unused memory
 mhubbsi <- data.set[[12]]
 vars_key <- c('riv', 'chl', 'wmi')
 wv_list <- coherency_analysis(mhubbsi, vars_key)
+saveRDS(wv_list, file="wv_coherence_mhubbsi_riv5_chl0_wmi11.RData")
+# wv_list <- readRDS(paste0(getwd(),
+#                           "/wv_coherence_mhubbsi_riv5_chl0_wmi11.RData"))
 # Plot
-file_name = paste0(file = output, "Fig13_Mhubbsi_WAVELET_COHERENCE",
+file_name = paste0(file = output, "Fig9_Mhubbsi_WAVELET_COHERENCE",
                    ".pdf", sep="")
 pdf(file_name, family = "Times",
     width=9, height=12, bg = "transparent", colormodel = "cmyk", compress = T)
@@ -884,7 +903,7 @@ p3 = getWavelets.plot(wvc = wv_list[[3]],
                  var_name = "Wind mixing index", sp_name = "M. hubbsi",
                  ulab = "C")
 dev.off()
-
+# 
 # Clear console and environment keeping dataset, packages and functions ####
 cat("\014") 
 rm(list = setdiff(ls(), (c("data.set", "output",  "pk", lsf.str()))))
@@ -908,6 +927,9 @@ for (j in 1:length(vars_key)){
                            verbose = F)
   wv_x[[j]] <-assign(paste0("wv_",vars_key[j]), my.wx)
 }
+# save(wv_x, file="wps_riv_kd_sss_chl_wmi.RData")
+# load(paste0(getwd(),
+#            "wps_riv_kd_sss_chl_wmi.RData")
 # Elements for labels
 vars_n <- c('River discharge',
             'Turbidity (kd)','Sea surface salinity (sss)',
@@ -931,10 +953,10 @@ wps_lines <- do.call(rbind, wps_lines)
 colorBlindBlack8  <- c("#0072B2", "#D55E00", "#E69F00","#44AA99", "#000000")
 lbls <- c("river discharge", "turbidity", "salinity", "chlorophyll-a", "wind")
 # Plot
-file_name = paste0(file = output, "Fig14_AVG_WPS_ENVIRONMENTAL",
+file_name = paste0(file = output, "Fig10_AVG_WPS_ENVIRONMENTAL",
                    ".pdf", sep="")
 pdf(file_name, family = "Times",
     width=6, height=6, bg = "transparent", colormodel = "cmyk", compress = T)
 wavelet_power.plot(wps_lines, colorBlindBlack8, vars_key, lbls)
 dev.off()
-#                 
+#
