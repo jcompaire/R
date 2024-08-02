@@ -12,8 +12,8 @@
 ## performed in the manuscript:
 ## Compaire, J.C., Acha, E.M., Moreira, D. & Simionato C.G. (2024).
 ## Time series modeling of coastal fishery landings on the Southwestern
-## Atlantic shelf: influence of environmental drivers
-## https://doi.org/10.1111/fog.12688
+## Atlantic shelf: influence of environmental drivers. 
+## Fisheries Oceanography, e12688, https://doi.org/10.1111/fog.12688
 ##
 ## -- -- -- -- -- -- -- -- -- -- -- -- --
 #
@@ -90,7 +90,7 @@ coherency_analysis <- function(dataframe, vars_key){
   }
   return(wv_list)
 }
-#
+# 
 ## === FIGURES ====
 ## -- -- -- -- -- -- -- -- -- -- -- -- --
 ## Customize Figures
@@ -381,8 +381,8 @@ map_aucfz <- function(df, plygn = NULL, scale = NULL, clabs = NULL, ...){
       axis.title.x=element_blank(),
       axis.title.y=element_blank(),
       axis.text = element_text(size = 12),
-      axis.text.x = element_text(vjust = -0.5),
-      axis.text.y = element_text(hjust = -0.5),
+      axis.text.x = element_text(vjust = -0.5, color = "black"),
+      axis.text.y = element_text(hjust = -0.5, color = "black"),
       axis.text.x.top = element_blank(), # do not show top / right axis labels
       axis.text.y.right = element_blank(),
       axis.ticks.length = unit(-2, "mm"),
@@ -395,7 +395,6 @@ map_aucfz <- function(df, plygn = NULL, scale = NULL, clabs = NULL, ...){
     theme(
       text = element_text(family = "Times"))
   }
-#
 ## Fig. 2 - TIME SERIES: MONTHLY PEAKS ####
 monthly_peaks.plot <- function(df){
   if (!is.data.frame(df))
@@ -451,234 +450,7 @@ monthly_peaks.plot <- function(df){
   pl
 }
 # 
-## Fig. 3 & Figs. 4b, 5b, 6b - CORRELOGRAMS ####
-correlograms.plot <- function(x, lags = NULL, main = NULL,
-                              upperindex = NULL, ...){
-  if (!is.numeric(x))
-    stop("'x' must be a numeric vector")
-  if (is.null(lags)) {
-    lags <- 36
-  } else if ((lags %% 1 == 0) == FALSE || (lags < 0)) {
-    stop('The argument "lags" must be a positive integer')
-  }
-  if (is.null(main) & is.null(upperindex)) {
-    mytitle <- deparse(substitute(x))
-    mysubt <- NULL
-    sz <- 20
-    fc <- 'plain'
-    hz <- 0.5
-    vt <- 1
-  } else if (!is.null(main) & is.null(upperindex)) {
-    if (!is.character(main))
-      stop("'main' must be a character string")
-    mytitle <- paste(main)
-    mysubt <- NULL
-    sz <- 20
-    fc <- 'italic'
-    hz <- 0.5
-    vt <- 1
-  } else if (is.null(main) & !is.null(upperindex)) {
-    if (!is.character(upperindex))
-      stop("'upperindex' must be a character string")
-    mytitle <- NULL
-    mysubt <- paste(upperindex)
-    sz <- 20
-    fc <- 'bold'
-    hz <- 0.5
-    vt <- -5
-  } else if (!is.null(main) & !is.null(upperindex)) {
-    if (!is.character(main))
-      stop("'main' amd 'upperindex' must be a character string")
-    mytitle <- paste(main)
-    mysubt <- paste(upperindex)
-    sz <- 20
-    fc <- 'italic'
-    hz <- 0.5
-    vt <- -5
-  }
-  acf_v <- acf(x, lag.max = lags, type = "correlation", plot = FALSE)$acf
-  p1 <- ggAcf(x, lag.max = lags) +
-    theme_tufte() +
-    scale_x_continuous(breaks = round(seq(0, lags, by = 2),1)) +
-    scale_y_continuous(breaks = round(seq(
-      round_any(min(acf_v), 1/10, f = floor),
-      round_any(max(acf_v[2:length(acf_v)]), 1/10, f = ceiling),
-      by = 0.1),1)) +
-      theme(axis.title.x = element_blank(),
-          axis.text.x = element_blank()) +
-    theme(axis.line = element_line(colour = "black"),
-          axis.ticks = element_line(colour="black")) +
-    theme(axis.text = element_text(color = "black", size = 12)) +
-    theme(axis.text=element_text(size=12),
-          axis.title=element_text(size=14,face="plain")) +
-    labs(title = mytitle, subtitle = mysubt) +
-    theme(plot.title = element_text(
-      size=sz, face = fc, hjust = hz, vjust = vt)) +
-    theme(plot.subtitle = element_text(
-      size=sz-4, face = "bold", hjust = hz-0.55, vjust = vt+10)) 
-  pacf_v <- acf(x, lag.max = lags, type = "partial", plot = FALSE)$acf
-  p2 <- ggAcf(x, lag.max = lags, type = 'partial') +
-  labs(title = "") + theme_tufte() +
-  scale_x_continuous(breaks = round(seq(0, lags, by = 2),1)) +
-  scale_y_continuous(breaks = round(seq(
-    round_any(min(pacf_v), 1/10, f = floor),
-    round_any(max(pacf_v[2:length(pacf_v)]), 1/10, f = ceiling),
-    by = 0.1),1)) +
-  theme(axis.line = element_line(colour = "black"),
-        axis.ticks = element_line(colour="black")) +
-  theme(axis.text = element_text(color = "black", size = 12)) +
-  labs(x="Lags") +
-  theme(axis.text=element_text(size=12),
-        axis.title=element_text(size=14,face="plain"))
-pt <- p1 / p2
-pt
-}
-#
-## Figs. 4a, 5a, 6a - RESIDUALS_TEMPORAL SERIES ####
-residuals_ts.plot <- function(x, upperindex = NULL, ...){
-  if (!is.numeric(x))
-    stop("'x' must be a numeric vector")
-  if(is.null(upperindex)){
-    upperindex = NULL
-    } else if (!is.character(upperindex))
-    stop("'upperindex' must be a character string")
-  startT = format(as.yearmon(time(x)[1]), format = "%Y")
-  endT = format(as.yearmon(time(x)[length(x)]+1), format = "%Y")
-  autoplot(ts(x, start = c(startT,1),
-    frequency = 12),lty=1, lwd=.5) +
-      labs(y = 'Residuals', x = 'Dates') + theme_tufte() +
-      scale_x_continuous(breaks = round(seq(startT, endT, by = 2),1)) +
-      scale_y_continuous(breaks = round(seq(
-        round(min(stdres)), round(max(stdres)), by = 1),1)) +
-      theme(axis.line = element_line(colour = "black"),
-            axis.ticks = element_line(colour="black")) +
-      theme(axis.text = element_text(color = "black", size = 12)) +
-      theme(axis.text=element_text(size=12),
-            axis.title=element_text(size=14,face="plain")) +
-      ggtitle(upperindex) +
-      theme(plot.title = element_text(size=16, face = "bold",
-                                      hjust = -0.05, vjust = -4))
-}
-#
-## Figs. 4c, 5c, 6c - RESIDUALS_HISTOGRAM ####
-residuals_hist.plot <- function(x, pval = NULL, upperindex = NULL, ...){
-  if (!is.numeric(x))
-    stop("'x' must be a numeric vector")
-  if(is.null(pval)){
-    mytitle <- NULL
-  } else if (is.numeric(pval)){
-    mytitle <- paste("Ljung-Box p-value = ", round((pval), digits = 3))
-  } else if (!is.numeric(pval)){
-    stop("'p-value' from Ljung-Box test must be a numeric value")
-  }
-  if(is.null(upperindex)){
-    upperindex = NULL
-  } else if (!is.character(upperindex))
-    stop("'upperindex' must be a character string")
-  # Nested function of ggplot modified to plot the density curve in blue
-  gghistogram_B <- function (x, add.normal = FALSE, add.kde = FALSE,
-                             add.rug = TRUE, bins, boundary = 0){
-    {
-      if (!requireNamespace("ggplot2", quietly = TRUE)) {
-        stop("ggplot2 is needed for this function to work. Install it via install.packages(\"ggplot2\")", 
-             call. = FALSE)
-      }
-      else {
-        if (missing(bins)) {
-          bins <- min(500, grDevices::nclass.FD(na.exclude(x)))
-        }
-        data <- data.frame(x = as.numeric(c(x)))
-        binwidth <- (max(x, na.rm = TRUE) - min(x, na.rm = TRUE))/bins
-        p <- ggplot2::ggplot() +
-          ggplot2::geom_histogram(ggplot2::aes(x), 
-                                  data = data, color="gray23", fill = "gray23",
-                                  binwidth = binwidth, boundary = boundary) + 
-          ggplot2::xlab(deparse(substitute(x)))
-        if (add.normal || add.kde) {
-          xmin <- min(x, na.rm = TRUE)
-          xmax <- max(x, na.rm = TRUE)
-          if (add.kde) {
-            h <- stats::bw.SJ(x)
-            xmin <- xmin - 3 * h
-            xmax <- xmax + 3 * h
-          }
-          if (add.normal) {
-            xmean <- mean(x, na.rm = TRUE)
-            xsd <- sd(x, na.rm = TRUE)
-            xmin <- min(xmin, xmean - 3 * xsd)
-            xmax <- max(xmax, xmean + 3 * xsd)
-          }
-          xgrid <- seq(xmin, xmax, length.out = 512)
-          if (add.normal) {
-            df <- data.frame(x = xgrid, y = length(x) * 
-                               binwidth * stats::dnorm(xgrid, xmean, xsd))
-            p <- p + ggplot2::geom_line(ggplot2::aes(df$x, 
-                                                     df$y), 
-                                        linetype="dashed", col = "blue")
-          }
-          if (add.kde) {
-            kde <- stats::density(x, bw = h, from = xgrid[1], 
-                                  to = xgrid[512], n = 512)
-            p <- p + ggplot2::geom_line(ggplot2::aes(x = kde$x, 
-                                                     y = length(x) * binwidth * kde$y), col = "#67a9ff")
-          }
-        }
-        if (add.rug) {
-          p <- p + ggplot2::geom_rug(ggplot2::aes(x))
-        }
-        return(p)
-      }
-    }
-  }
-  gghistogram_B(x, add.normal = TRUE, add.rug = TRUE) +
-    theme_tufte() +
-    scale_x_continuous(breaks = round(seq(
-      round(min(x)), round(max(x)), by = 1),1)) +
-    scale_y_continuous(breaks = round(seq(0, length(x)/6, by = 8),1)) +
-    theme(axis.line = element_line(colour = "black"),
-          axis.ticks = element_line(colour="black")) +
-    theme(axis.text = element_text(color = "black", size = 12)) +
-    theme(axis.text=element_text(size=12),
-          axis.title=element_text(size=14,face="plain")) +
-    geom_text() +
-    labs(x = 'Residuals', y = 'Frequency',
-         title = mytitle,
-         subtitle = upperindex) +
-    theme(plot.title = element_text(hjust = 0.01, vjust = -15),
-          plot.subtitle = element_text(size = 16, face = 'bold',
-                                       hjust = -0.05, vjust = 1.8))
-}
-#
-## Figs. 4d, 5d, 6d - RESIDUALS_p-VALUES ####
-residuals_pv.plot <- function(df, upperindex = NULL,...){
-  if (!is.data.frame(df))
-    stop("'df' must be a dataframe got from LjungBoxTest")
-  if (is.null(upperindex)) {
-    mytitle = NULL
-  } else if (!is.null(upperindex) & is.character(upperindex)) {
-    mytitle <- upperindex
-  } else if (!is.character(upperindex)){
-  stop("'upperindex' must be a character string")
-  }
-  pv <- df[,3]
-  ggplot(df, aes(x = m, y = pvalue)) +
-    geom_point() +
-    labs(title = "") + theme_tufte() +
-    scale_x_continuous(breaks = round(seq(
-      min(boxresult[,1]), max(boxresult[,1]), by = 2),1)) +
-    scale_y_continuous(n.breaks = 5, limits = c(0,1)) +
-    theme(axis.line = element_line(colour = "black"),
-          axis.ticks = element_line(colour="black")) +
-    theme(axis.text = element_text(color = "black", size = 12)) +
-    labs(x="Lags", y = "p-value for Ljung-Box statistic") +
-    theme(axis.text=element_text(size=12),
-          axis.title=element_text(size=14,face="plain")) +
-    geom_hline(yintercept=0.05, linetype="dashed", color = "blue") +
-    ggtitle(mytitle) +
-    theme(plot.title = element_text(size=16, face = "bold",
-                                    hjust = -0.05, vjust = 0.5))
-}
-## Figs. 7, 8, 9 - TIME SERIES: OBSERVED, FITTED AND FORECAST VALUES  ####
+## Figs. 3, 4, 5 - TIME SERIES: OBSERVED, FITTED AND FORECAST VALUES - 7, 8, 9   ####
 obs_fit_for.plot <- function(x, y, z, ufit, lfit, ufor, lfor,
                              main = NULL, line_col, shaded_col ){
   if (!is.numeric(x) || !is.numeric(y) || !is.numeric(z))
@@ -724,7 +496,7 @@ obs_fit_for.plot <- function(x, y, z, ufit, lfit, ufor, lfor,
           legend.text = element_text(size = 16),
           legend.key.size = unit(1, "cm"))
 }
-## Fig. 10 - HEATMAP ====
+## Fig. 6 - HEATMAP - 10 ====
 heatmap.plot <- function(df, upperindex = NULL, ylabs = NULL, ...){
   if (!is.data.frame(df))
     stop("'df' must be a dataframe containing species and variable names,
@@ -753,6 +525,12 @@ heatmap.plot <- function(df, upperindex = NULL, ylabs = NULL, ...){
       limits = c(-0.2, 0.2),
       na.value = "white"
     ) +
+    guides(fill = guide_colorbar(
+      frame.colour = "black",    # Color of the border
+      frame.linewidth = 0.5,     # Width of the border line
+      ticks.colour = "black",    # Color of the ticks
+      ticks.linewidth = 0.25      # Width of the tick lines
+    )) +
     labs(
       x = "Lag (months)", y = '',
       title = df$species[1],
@@ -801,7 +579,7 @@ heatmap.plot <- function(df, upperindex = NULL, ylabs = NULL, ...){
                                    hjust = -0.01, vjust = 2)
     )
 }
-## Figs. 11, 12, 13 - WAVELET COHERENCY AND PHASE ANALYSES ====
+## Figs. 7, 8, 9 - WAVELET COHERENCY AND PHASE ANALYSES - 11, 12, 13 ====
 getWavelets.plot = function(wvc, var_name, sp_name, ulab, cb = NULL) {
   if (!is.list(wvc))
     stop("'wvc' must be a list containing analysis coherence results")
@@ -844,7 +622,7 @@ getWavelets.plot = function(wvc, var_name, sp_name, ulab, cb = NULL) {
         cex = 2, font = 2)
   # return(wvc)
 }
-## Fig. 14 - AVERAGE WAVELET POWER SPECTRUM ENVIRONMENTAL ====
+## Fig. 10 - AVERAGE WAVELET POWER SPECTRUM ENVIRONMENTAL - 14 ====
 wavelet_power.plot <- function(wps_lines, color_patterns, lmts, lbls){
   if (!is.data.frame(wps_lines))
     stop("'wps_lines' must be a dataframe containing wavelet power spectrum
@@ -886,7 +664,6 @@ wavelet_power.plot <- function(wps_lines, color_patterns, lmts, lbls){
     theme(axis.text = element_text(size = 12),
           axis.title = element_text(size = 14, face = "plain"))
 }
-#                                       
 ## Fig. S1 - RELATIONSHIP CPUE - COMMERCIAL LANDINGS ####
 cpue_landings.plot <- function(df){
   if (!is.data.frame(df))
@@ -906,7 +683,7 @@ cpue_landings.plot <- function(df){
       print(paste(sp[i], " -> p-value = ", round(pvalue, 3),
                   "/ r = ", round(r, 2)))
   }
- lm <-
+  lm <-
     ggplot(df, aes(
       x = cpue,
       y = landings,
@@ -919,18 +696,18 @@ cpue_landings.plot <- function(df){
                        labels = comma) +
     geom_smooth(method = "lm", se = TRUE, alpha = 0.5) +
     scale_fill_brewer(palette = "Dark2") +
-   annotate(
-     geom = "text", x = 275, y = 1000,
-     label = paste0("n= ", ns[1] ,"; r= ", rs[1]), 
-     fontface = "plain", family = "Times", color = "black", size = 4) +
-   annotate(
-     geom = "text", x = 700, y = 13000,
-     label = paste0("n= ", ns[2] ,"; r= ", rs[2]), 
-     fontface = "plain", family = "Times", color = "black", size = 4) +
-   annotate(
-     geom = "text", x = 1500, y = 50000,
-     label = paste0("n= ", ns[3] ,"; r= ", rs[3]), 
-     fontface = "plain", family = "Times", color = "black", size = 4) +
+    annotate(
+      geom = "text", x = 275, y = 1000,
+      label = paste0("n= ", ns[1] ,"; r= ", rs[1]), 
+      fontface = "plain", family = "Times", color = "black", size = 4) +
+    annotate(
+      geom = "text", x = 700, y = 13000,
+      label = paste0("n= ", ns[2] ,"; r= ", rs[2]), 
+      fontface = "plain", family = "Times", color = "black", size = 4) +
+    annotate(
+      geom = "text", x = 1500, y = 50000,
+      label = paste0("n= ", ns[3] ,"; r= ", rs[3]), 
+      fontface = "plain", family = "Times", color = "black", size = 4) +
     theme_tufte() +
     theme(
       legend.title = element_blank(),
@@ -1037,7 +814,7 @@ bp_landings.plot <- function(df){
           axis.title=element_text(size=14,face="plain")) 
 }
 #
-## Figs. S3, S4 - DECOM.PLOT ====
+## Figs. S3, S8 - DECOM.PLOT - S4 ====
 decomp.plot <- function(x, main = NULL, type = NULL, ...){
   mylist <- c("x", "seasonal", "trend", "random", "figure", "type")
   if(!isTRUE(all(mylist %in% names(x), TRUE)))
@@ -1113,3 +890,231 @@ decomp.plot <- function(x, main = NULL, type = NULL, ...){
   p
 }
 #
+## Fig. S4 & Figs. S5b, S6b, S7b - CORRELOGRAMS - 3, 4b,5b,6b####
+correlograms.plot <- function(x, lags = NULL, main = NULL,
+                              upperindex = NULL, ...){
+  if (!is.numeric(x))
+    stop("'x' must be a numeric vector")
+  if (is.null(lags)) {
+    lags <- 36
+  } else if ((lags %% 1 == 0) == FALSE || (lags < 0)) {
+    stop('The argument "lags" must be a positive integer')
+  }
+  if (is.null(main) & is.null(upperindex)) {
+    mytitle <- deparse(substitute(x))
+    mysubt <- NULL
+    sz <- 20
+    fc <- 'plain'
+    hz <- 0.5
+    vt <- 1
+  } else if (!is.null(main) & is.null(upperindex)) {
+    if (!is.character(main))
+      stop("'main' must be a character string")
+    mytitle <- paste(main)
+    mysubt <- NULL
+    sz <- 20
+    fc <- 'italic'
+    hz <- 0.5
+    vt <- 1
+  } else if (is.null(main) & !is.null(upperindex)) {
+    if (!is.character(upperindex))
+      stop("'upperindex' must be a character string")
+    mytitle <- NULL
+    mysubt <- paste(upperindex)
+    sz <- 20
+    fc <- 'bold'
+    hz <- 0.5
+    vt <- -5
+  } else if (!is.null(main) & !is.null(upperindex)) {
+    if (!is.character(main))
+      stop("'main' amd 'upperindex' must be a character string")
+    mytitle <- paste(main)
+    mysubt <- paste(upperindex)
+    sz <- 20
+    fc <- 'italic'
+    hz <- 0.5
+    vt <- -5
+  }
+  acf_v <- acf(x, lag.max = lags, type = "correlation", plot = FALSE)$acf
+  p1 <- ggAcf(x, lag.max = lags) +
+    theme_tufte() +
+    scale_x_continuous(breaks = round(seq(0, lags, by = 2),1)) +
+    scale_y_continuous(breaks = round(seq(
+      round_any(min(acf_v), 1/10, f = floor),
+      round_any(max(acf_v[2:length(acf_v)]), 1/10, f = ceiling),
+      by = 0.1),1)) +
+    theme(axis.title.x = element_blank(),
+          axis.text.x = element_blank()) +
+    theme(axis.line = element_line(colour = "black"),
+          axis.ticks = element_line(colour="black")) +
+    theme(axis.text = element_text(color = "black", size = 12)) +
+    theme(axis.text=element_text(size=12),
+          axis.title=element_text(size=14,face="plain")) +
+    labs(title = mytitle, subtitle = mysubt) +
+    theme(plot.title = element_text(
+      size=sz, face = fc, hjust = hz, vjust = vt)) +
+    theme(plot.subtitle = element_text(
+      size=sz-4, face = "bold", hjust = hz-0.55, vjust = vt+10)) 
+  pacf_v <- acf(x, lag.max = lags, type = "partial", plot = FALSE)$acf
+  p2 <- ggAcf(x, lag.max = lags, type = 'partial') +
+    labs(title = "") + theme_tufte() +
+    scale_x_continuous(breaks = round(seq(0, lags, by = 2),1)) +
+    scale_y_continuous(breaks = round(seq(
+      round_any(min(pacf_v), 1/10, f = floor),
+      round_any(max(pacf_v[2:length(pacf_v)]), 1/10, f = ceiling),
+      by = 0.1),1)) +
+    theme(axis.line = element_line(colour = "black"),
+          axis.ticks = element_line(colour="black")) +
+    theme(axis.text = element_text(color = "black", size = 12)) +
+    labs(x="Lags") +
+    theme(axis.text=element_text(size=12),
+          axis.title=element_text(size=14,face="plain"))
+  pt <- p1 / p2
+  pt
+}
+#
+## Figs. S5a, S6a, S7a - RESIDUALS_TEMPORAL SERIES - 4a,5a,6a ####
+residuals_ts.plot <- function(x, upperindex = NULL, ...){
+  if (!is.numeric(x))
+    stop("'x' must be a numeric vector")
+  if(is.null(upperindex)){
+    upperindex = NULL
+  } else if (!is.character(upperindex))
+    stop("'upperindex' must be a character string")
+  startT = format(as.yearmon(time(x)[1]), format = "%Y")
+  endT = format(as.yearmon(time(x)[length(x)]+1), format = "%Y")
+  autoplot(ts(x, start = c(startT,1),
+              frequency = 12),lty=1, lwd=.5) +
+    labs(y = 'Residuals', x = 'Dates') + theme_tufte() +
+    scale_x_continuous(breaks = round(seq(startT, endT, by = 2),1)) +
+    scale_y_continuous(breaks = round(seq(
+      round(min(stdres)), round(max(stdres)), by = 1),1)) +
+    theme(axis.line = element_line(colour = "black"),
+          axis.ticks = element_line(colour="black")) +
+    theme(axis.text = element_text(color = "black", size = 12)) +
+    theme(axis.text=element_text(size=12),
+          axis.title=element_text(size=14,face="plain")) +
+    ggtitle(upperindex) +
+    theme(plot.title = element_text(size=16, face = "bold",
+                                    hjust = -0.05, vjust = -4))
+}
+#
+## Figs. S5c, S6c, S7c - RESIDUALS_HISTOGRAM - 4c, 5c, 6c ####
+residuals_hist.plot <- function(x, pval = NULL, upperindex = NULL, ...){
+  if (!is.numeric(x))
+    stop("'x' must be a numeric vector")
+  if(is.null(pval)){
+    mytitle <- NULL
+  } else if (is.numeric(pval)){
+    mytitle <- paste("Ljung-Box p-value = ", round((pval), digits = 3))
+  } else if (!is.numeric(pval)){
+    stop("'p-value' from Ljung-Box test must be a numeric value")
+  }
+  if(is.null(upperindex)){
+    upperindex = NULL
+  } else if (!is.character(upperindex))
+    stop("'upperindex' must be a character string")
+  # Nested function of ggplot modified to plot the density curve in blue
+  gghistogram_B <- function (x, add.normal = FALSE, add.kde = FALSE,
+                             add.rug = TRUE, bins, boundary = 0){
+    {
+      if (!requireNamespace("ggplot2", quietly = TRUE)) {
+        stop("ggplot2 is needed for this function to work. Install it via install.packages(\"ggplot2\")", 
+             call. = FALSE)
+      }
+      else {
+        if (missing(bins)) {
+          bins <- min(500, grDevices::nclass.FD(na.exclude(x)))
+        }
+        data <- data.frame(x = as.numeric(c(x)))
+        binwidth <- (max(x, na.rm = TRUE) - min(x, na.rm = TRUE))/bins
+        p <- ggplot2::ggplot() +
+          ggplot2::geom_histogram(ggplot2::aes(x), 
+                                  data = data, color="gray23", fill = "gray23",
+                                  binwidth = binwidth, boundary = boundary) + 
+          ggplot2::xlab(deparse(substitute(x)))
+        if (add.normal || add.kde) {
+          xmin <- min(x, na.rm = TRUE)
+          xmax <- max(x, na.rm = TRUE)
+          if (add.kde) {
+            h <- stats::bw.SJ(x)
+            xmin <- xmin - 3 * h
+            xmax <- xmax + 3 * h
+          }
+          if (add.normal) {
+            xmean <- mean(x, na.rm = TRUE)
+            xsd <- sd(x, na.rm = TRUE)
+            xmin <- min(xmin, xmean - 3 * xsd)
+            xmax <- max(xmax, xmean + 3 * xsd)
+          }
+          xgrid <- seq(xmin, xmax, length.out = 512)
+          if (add.normal) {
+            df <- data.frame(x = xgrid, y = length(x) * 
+                               binwidth * stats::dnorm(xgrid, xmean, xsd))
+            p <- p + ggplot2::geom_line(ggplot2::aes(df$x, 
+                                                     df$y), 
+                                        linetype="dashed", col = "blue")
+          }
+          if (add.kde) {
+            kde <- stats::density(x, bw = h, from = xgrid[1], 
+                                  to = xgrid[512], n = 512)
+            p <- p + ggplot2::geom_line(ggplot2::aes(x = kde$x, 
+                                                     y = length(x) * binwidth * kde$y), col = "#67a9ff")
+          }
+        }
+        if (add.rug) {
+          p <- p + ggplot2::geom_rug(ggplot2::aes(x))
+        }
+        return(p)
+      }
+    }
+  }
+  gghistogram_B(x, add.normal = TRUE, add.rug = TRUE) +
+    theme_tufte() +
+    scale_x_continuous(breaks = round(seq(
+      round(min(x)), round(max(x)), by = 1),1)) +
+    scale_y_continuous(breaks = round(seq(0, length(x)/6, by = 8),1)) +
+    theme(axis.line = element_line(colour = "black"),
+          axis.ticks = element_line(colour="black")) +
+    theme(axis.text = element_text(color = "black", size = 12)) +
+    theme(axis.text=element_text(size=12),
+          axis.title=element_text(size=14,face="plain")) +
+    geom_text() +
+    labs(x = 'Residuals', y = 'Frequency',
+         title = mytitle,
+         subtitle = upperindex) +
+    theme(plot.title = element_text(hjust = 0.01, vjust = -15),
+          plot.subtitle = element_text(size = 16, face = 'bold',
+                                       hjust = -0.05, vjust = 1.8))
+}
+#
+## Figs. S5d, S6d, S7d - RESIDUALS_p-VALUES - 4d, 5d, 6d  ####
+residuals_pv.plot <- function(df, upperindex = NULL,...){
+  if (!is.data.frame(df))
+    stop("'df' must be a dataframe got from LjungBoxTest")
+  if (is.null(upperindex)) {
+    mytitle = NULL
+  } else if (!is.null(upperindex) & is.character(upperindex)) {
+    mytitle <- upperindex
+  } else if (!is.character(upperindex)){
+    stop("'upperindex' must be a character string")
+  }
+  pv <- df[,3]
+  ggplot(df, aes(x = m, y = pvalue)) +
+    geom_point() +
+    labs(title = "") + theme_tufte() +
+    scale_x_continuous(breaks = round(seq(
+      min(boxresult[,1]), max(boxresult[,1]), by = 2),1)) +
+    scale_y_continuous(n.breaks = 5, limits = c(0,1)) +
+    theme(axis.line = element_line(colour = "black"),
+          axis.ticks = element_line(colour="black")) +
+    theme(axis.text = element_text(color = "black", size = 12)) +
+    labs(x="Lags", y = "p-value for Ljung-Box statistic") +
+    theme(axis.text=element_text(size=12),
+          axis.title=element_text(size=14,face="plain")) +
+    geom_hline(yintercept=0.05, linetype="dashed", color = "blue") +
+    ggtitle(mytitle) +
+    theme(plot.title = element_text(size=16, face = "bold",
+                                    hjust = -0.05, vjust = 0.5))
+}
+# 
