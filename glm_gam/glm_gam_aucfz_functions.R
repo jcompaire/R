@@ -828,7 +828,7 @@ map_aucfz <- function(df, plygn = NULL, plygn2 = NULL,
 ## Figs. 2 & 3 - ERROR DISTRIBUTIONS COMPARISON ####
 plot_de_lag <- function(df){
   if (!is.data.frame(df))
-    stop("'df' must be a dataframe containing DE values at different time langs
+    stop("'df' must be a dataframe containing DE values at different time lags
          for both error distributions")
   ggplot(df, aes(x = factor(lag, levels = seq(0,10,1)),
                  y = max, fill = error)) +
