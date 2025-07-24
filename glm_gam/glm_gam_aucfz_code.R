@@ -377,7 +377,7 @@ model_l1.1 <- glm(hf[[2]], family = Gamma(link = "inverse"),
 check_collinearity(model_l1.1) # VIF < 10
 summary(model_l1.1)
 shapiro.test(model_l1.1$residuals) # p > 0.05 residuals normally distributed
-# i.2) Lag 1 - 50th - (river + kd + river:kd)  --------------------------------
+# i.2) Lag 1 - 25th - (river + kd + river:kd)  --------------------------------
 hf <- handyf_glm(k = 1, ix = 4, l = 1+1, j = 7)
 model_l1.2 <- glm(hf[[2]], family = Gamma(link = "inverse"),
                   data = hf[[1]], na.action = na.omit)
