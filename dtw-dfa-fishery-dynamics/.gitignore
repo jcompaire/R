@@ -22,4 +22,5 @@ old_files/
 !datasets/*.RData
 !outputs/files/*.RData
 
-
+# --- Avoid to upload duplicated figures by quarto
+/docs/outputs/figures/
