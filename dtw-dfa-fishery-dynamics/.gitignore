@@ -7,7 +7,7 @@ _site/
 .Ruserdata
 
 # --- OLDER VERSIONS or BACKUPS FILES ---
-old_files/
+some_backup_files/
 
 # --- HTML OUTPUTS ---
 # Ignore all .html files to keep the root clean
