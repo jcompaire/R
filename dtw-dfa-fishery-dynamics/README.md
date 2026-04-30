@@ -1,9 +1,9 @@
 ## An R repository for running Dynamic Time Warping (DTW), Dynamic Factor Analysis (DFA), Generalized Linear Models (GLMs) and Generalized Additive Models (GAMs) to evaluate Multiscale Environmental Forcing of Multispecies Fishery Dynamics ##
 
-This repository contains the data and code to replicate the statistical analyses and figures presented in the manuscript:
-[***Multiscale environmental forcing of multispecies fishery dynamics across climate timescales***] (2026). Compaire, J.C., Irigoyen, A.J., Simionato, C.G. & Acha, E.M. (under review in _Fisheries Oceanography_. 
+This repository contains the data and code to replicate the statistical analyses and figures presented in the manuscript:\
+***Multiscale environmental forcing of multispecies fishery dynamics across climate timescales*** (2026). Compaire, J.C., Irigoyen, A.J., Simionato, C.G. & Acha, E.M., under review in _Fisheries Oceanography_. 
 
-The full analysis, including code execution and interactive visualizations, is available as a Quarto website.
+The full analysis, including code execution and interactive visualizations, is available as a [Quarto website](https://quarto.org/).
 
 🔬 Overview
 
