@@ -3,7 +3,7 @@
 This repository contains the data and code to replicate the statistical analyses and figures presented in the manuscript:\
 ***Multiscale environmental forcing of multispecies fishery dynamics across climate timescales*** (2026). Compaire, J.C., Irigoyen, A.J., Simionato, C.G. & Acha, E.M., under review in _Fisheries Oceanography_. 
 
-The full analysis, including code execution and interactive visualizations, is available as a [Quarto website](https://quarto.org/).
+The full analysis, including code execution and interactive visualizations, is created using [Quarto](https://quarto.org/).
 
 🔬 Overview
 
