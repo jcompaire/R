@@ -36,5 +36,5 @@ Render the entire project using the terminal: quarto render.
 [Jesus C. Compaire](https://www.researchgate.net/profile/Jesus-Compaire) | Lead Developer: wrote and maintains the repository and its contents.\
 [Alejo J. Irigoyen](https://www.researchgate.net/profile/Alejo-Irigoyen), [Claudia G. Simionato](https://www.researchgate.net/profile/Claudia-Simionato), [Eduardo M. Acha](https://www.researchgate.net/profile/Marcelo-Acha).
 
-This work is part of our commitment to Open Science. All code is shared under a MIT License.
+This work is part of our commitment to Open Science. All code is shared under a Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International *(CC BY-NC-SA 4.0)* License.
 
