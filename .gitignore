@@ -1,1 +1,9 @@
-dtw_dfa_glm_gam/
+# --- System files (Debian/Linux)
+.DS_Store
+
+# --- Ignore all .Rhistory files in subfolders
+**/.Rhistory
+**/.Rproj.user/
+
+# --- Some particular files
+/example_comparing_two_scripts.R
