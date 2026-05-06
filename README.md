@@ -3,7 +3,7 @@ An R's toolbox to deal with big data processing and statistical analysis in mari
 
 ## R Projects
 
-- [PERMANOVA analyses on Scorpaena porcus feeding habits](https://github.com/jcompaire/permanova_test)
+- [PERMANOVA analyses on _Scorpaena porcus_ feeding habits](https://github.com/jcompaire/permanova_test)
 - [Lipophrys pholis growth analyses](https://github.com/jcompaire/FishGrowth_Lpholis)
 - [Time series modeling: ARIMA and Wavelet coherence analyses](https://github.com/jcompaire/time_series)
 - [Generalized Linear and Additive Models (GLM and GAM analyses)](https://github.com/jcompaire/glm_gam_fishery)
